@@ -17,6 +17,7 @@ import {
   VerifyEmailDocs,
   ForgotPasswordDocs,
   ResetPasswordDocs,
+  ResendVerificationDocs,
 } from './swagger/auth.swagger';
 import { ApiTags } from '@nestjs/swagger';
 import { RequireTurnstile } from 'src/common/decorators/require-turnstile.decorator';
@@ -33,6 +34,7 @@ import {
 import { SafeSession, SafeUser } from 'src/common/interfaces/auth';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 
 @ApiTags('authentication')
 @Controller('auth')
@@ -91,6 +93,26 @@ export class AuthController {
     @CurrentUser() user: SafeUser,
   ) {
     return await this.authService.verifyEmail(user.email, dto.code);
+  }
+
+  @Post('resend-verification')
+  @UseGuards(AuthGuard)
+  @RateLimit({
+    requests: 3,
+    window: '5m',
+    keyGenerator: (req) => `resend-verification:${req.user?.id}`,
+    skipSuccessfulRequests: false,
+  })
+  @RequireTurnstile()
+  @ResendVerificationDocs()
+  @LogRequest({
+    logBody: true,
+  })
+  async resendVerification(
+    @Body() dto: ResendVerificationDto,
+    @CurrentUser() user: SafeUser,
+  ) {
+    return await this.authService.resendVerification(user.email);
   }
 
   @Post('forgot-password')

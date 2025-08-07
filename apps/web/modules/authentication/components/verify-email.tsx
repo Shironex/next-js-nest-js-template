@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Loader2, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Loader2, CheckCircle, Mail } from 'lucide-react'
 import AuthLayout from './aut-layout'
 import { Button } from '@workspace/ui/components/button'
 import { APP_ROUTES } from '@/lib/constants'
 import { useVerifyEmail } from '../hooks/use-verify-email'
+import { useResendVerification } from '../hooks/use-resend-verification'
 import { useForm } from 'react-hook-form'
-import { VerifyEmailFormData, verifyEmailSchema } from '../utils/validation'
+import {
+  VerifyEmailFormData,
+  verifyEmailSchema,
+  ResendVerificationFormData,
+  resendVerificationSchema,
+} from '../utils/validation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Form,
@@ -17,7 +23,6 @@ import {
   FormDescription,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@workspace/ui/components/form'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@workspace/ui/components/input-otp'
@@ -28,8 +33,11 @@ import { useRouter } from 'next/navigation'
 const VerifyEmailForm = ({ email }: { email: string }) => {
   const router = useRouter()
   const verifyEmail = useVerifyEmail()
+  const resendVerification = useResendVerification()
   const logout = useLogout({ autoRedirect: false })
   const [isVerified, setIsVerified] = useState(false)
+  const [canResend, setCanResend] = useState(true)
+  const [resendCooldown, setResendCooldown] = useState(0)
 
   const form = useForm<VerifyEmailFormData>({
     resolver: zodResolver(verifyEmailSchema),
@@ -39,9 +47,69 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
     },
   })
 
+  const resendForm = useForm<ResendVerificationFormData>({
+    resolver: zodResolver(resendVerificationSchema),
+    defaultValues: {
+      turnstileToken: '',
+    },
+  })
+
+  // Generate unique localStorage key for this email
+  const storageKey = `resend_cooldown_${email}`
+
+  // Initialize resend cooldown from localStorage
+  useEffect(() => {
+    const checkCooldown = () => {
+      const stored = localStorage.getItem(storageKey)
+      if (stored) {
+        const { endTime } = JSON.parse(stored)
+        const now = Date.now()
+        const remainingTime = Math.max(0, Math.ceil((endTime - now) / 1000))
+
+        if (remainingTime > 0) {
+          setResendCooldown(remainingTime)
+          setCanResend(false)
+        } else {
+          setCanResend(true)
+          setResendCooldown(0)
+          localStorage.removeItem(storageKey)
+        }
+      }
+    }
+
+    // Check immediately
+    checkCooldown()
+
+    // Set up timer to update countdown
+    const timer = setInterval(() => {
+      const stored = localStorage.getItem(storageKey)
+      if (stored) {
+        const { endTime } = JSON.parse(stored)
+        const now = Date.now()
+        const remainingTime = Math.max(0, Math.ceil((endTime - now) / 1000))
+
+        if (remainingTime > 0) {
+          setResendCooldown(remainingTime)
+          setCanResend(false)
+        } else {
+          setCanResend(true)
+          setResendCooldown(0)
+          localStorage.removeItem(storageKey)
+        }
+      } else {
+        setCanResend(true)
+        setResendCooldown(0)
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [email, storageKey])
+
   function onSubmit(data: VerifyEmailFormData) {
     verifyEmail.mutate(data, {
       onSuccess: () => {
+        // Clear the cooldown when email is successfully verified
+        localStorage.removeItem(storageKey)
         setIsVerified(true)
       },
     })
@@ -55,17 +123,42 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
     })
   }
 
+  function handleResendCode() {
+    const turnstileToken = resendForm.getValues('turnstileToken')
+    if (!turnstileToken) {
+      return
+    }
+
+    resendVerification.mutate(
+      { turnstileToken },
+      {
+        onSuccess: () => {
+          // Save cooldown end time to localStorage
+          const cooldownDuration = 60 // seconds
+          const endTime = Date.now() + cooldownDuration * 1000
+
+          localStorage.setItem(storageKey, JSON.stringify({ endTime }))
+
+          setCanResend(false)
+          setResendCooldown(cooldownDuration)
+        },
+      },
+    )
+  }
+
   function handleTurnstileVerify(token: string) {
     form.setValue('turnstileToken', token)
+    resendForm.setValue('turnstileToken', token)
   }
 
   function handleTurnstileError() {
     form.setValue('turnstileToken', '')
+    resendForm.setValue('turnstileToken', '')
   }
 
   if (isVerified) {
     return (
-      <AuthLayout title="Email Zweryfikowany!" subtitle="Twoje konto zostało pomyślnie aktywowane">
+      <AuthLayout title="Email Verified!" subtitle="Your account has been successfully activated">
         <motion.div
           className="space-y-6 text-center"
           initial={{ opacity: 0, scale: 0.95 }}
@@ -80,8 +173,8 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
             <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
           </motion.div>
 
-          <Button asChild className="w-full bg-amber-600 hover:bg-amber-700">
-            <Link href={APP_ROUTES.HOME}>Przenieś na stronę główną</Link>
+          <Button asChild className="w-full">
+            <Link href={APP_ROUTES.HOME}>Continue to Dashboard</Link>
           </Button>
         </motion.div>
       </AuthLayout>
@@ -90,21 +183,20 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
 
   return (
     <AuthLayout
-      title="Zweryfikuj swój adres e-mail"
-      subtitle={`Przesłaliśmy 8 cyfrowy kod weryfikacyjny na ${email}`}
+      title="Verify Your Email"
+      subtitle={`We've sent an 8-digit verification code to ${email}`}
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-6">
-            {/* OTP Input */}
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kod weryfikacyjny</FormLabel>
-                    <FormControl>
+      <div className="mx-auto w-full max-w-sm space-y-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* OTP Input Section */}
+            <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem className="space-y-4">
+                  <FormControl>
+                    <div className="flex justify-center">
                       <InputOTP maxLength={8} {...field}>
                         <InputOTPGroup>
                           <InputOTPSlot index={0} />
@@ -117,85 +209,86 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
                           <InputOTPSlot index={7} />
                         </InputOTPGroup>
                       </InputOTP>
-                    </FormControl>
-                    <FormDescription>
-                      Proszę wprowadzić kod weryfikacyjny wysłany na Twój adres e-mail.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="turnstileToken"
-                render={() => (
-                  <FormItem>
-                    <FormControl>
-                      <div className="flex justify-start">
-                        <Turnstile
-                          onSuccess={handleTurnstileVerify}
-                          onError={handleTurnstileError}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {verifyEmail.isPending && (
-                <motion.div
-                  className="flex items-center justify-center space-x-2 text-amber-600"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Verifying code...</span>
-                </motion.div>
+                    </div>
+                  </FormControl>
+                  <FormDescription className="text-center">
+                    Enter the 8-digit verification code sent to your email address.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
+
+            {/* Turnstile */}
+            <FormField
+              control={form.control}
+              name="turnstileToken"
+              render={() => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex justify-center">
+                      <Turnstile onSuccess={handleTurnstileVerify} onError={handleTurnstileError} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Verify Button */}
             <Button
+              type="submit"
               disabled={
-                form.getValues('code').length !== 6 || verifyEmail.isPending || logout.isPending
+                form.getValues('code').length !== 8 ||
+                !form.getValues('turnstileToken') ||
+                verifyEmail.isPending
               }
-              className="w-full bg-amber-600 py-3 text-base font-semibold text-white hover:bg-amber-700"
+              className="w-full"
             >
               {verifyEmail.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
               ) : (
-                'Zweryfikuj adres e-mail'
+                'Verify Email'
               )}
             </Button>
+          </form>
+        </Form>
 
-            {/* Back to Sign In */}
-            <motion.div
-              className="border-t border-gray-200 pt-6 text-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-            >
+        {/* Resend Section */}
+        <div className="space-y-4 border-t pt-6">
+          <div className="space-y-3 text-center">
+            <p className="text-muted-foreground text-sm">Didn't receive the code?</p>
+            {canResend ? (
               <Button
-                onClick={handleLogout}
-                disabled={logout.isPending || verifyEmail.isPending}
-                variant={'link'}
-                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
+                type="button"
+                variant="outline"
+                onClick={handleResendCode}
+                disabled={resendVerification.isPending || !resendForm.getValues('turnstileToken')}
+                className="w-full"
               >
-                {!logout.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
+                {resendVerification.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resending...
+                  </>
                 ) : (
                   <>
-                    <ArrowLeft className="mr-1 h-4 w-4" />
-                    Powrót do logowania
+                    <Mail className="mr-2 h-4 w-4" />
+                    Resend Verification Code
                   </>
                 )}
               </Button>
-            </motion.div>
+            ) : (
+              <div className="text-muted-foreground py-2 text-sm">
+                Resend available in {resendCooldown} seconds
+              </div>
+            )}
           </div>
-        </form>
-      </Form>
+        </div>
+      </div>
     </AuthLayout>
   )
 }

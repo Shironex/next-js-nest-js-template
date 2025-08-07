@@ -7,6 +7,7 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { Request, Response } from 'express';
 import { TurnstileGuard } from 'src/common/guards/turnstile.guard';
 import { RateLimitGuard } from 'src/common/guards/rate-limit.guard';
@@ -550,6 +551,127 @@ describe('AuthController', () => {
       expect(result).toEqual({
         message: 'Wylogowano pomyślnie',
       });
+    });
+  });
+
+  describe('resendVerification', () => {
+    const mockUser: SafeUser = {
+      id: 'user_123',
+      email: 'test@example.com',
+      username: 'testuser',
+      emailVerified: false,
+      isActive: true,
+      role: Role.USER,
+    };
+
+    const mockDto: ResendVerificationDto = {
+      turnstileToken: 'valid-turnstile-token',
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully resend verification code', async () => {
+      const expectedResponse = {
+        message: 'New verification code has been sent to your email',
+      };
+
+      authService.resendVerification.mockResolvedValue(expectedResponse);
+
+      const result = await controller.resendVerification(mockDto, mockUser);
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        mockUser.email,
+      );
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('should handle service throwing BadRequestException for user not found', async () => {
+      const error = new Error('User not found');
+      authService.resendVerification.mockRejectedValue(error);
+
+      await expect(
+        controller.resendVerification(mockDto, mockUser),
+      ).rejects.toThrow('User not found');
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        mockUser.email,
+      );
+    });
+
+    it('should handle service throwing BadRequestException for already verified email', async () => {
+      const error = new Error('Your email is already verified');
+      authService.resendVerification.mockRejectedValue(error);
+
+      await expect(
+        controller.resendVerification(mockDto, mockUser),
+      ).rejects.toThrow('Your email is already verified');
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        mockUser.email,
+      );
+    });
+
+    it('should handle service throwing InternalServerErrorException', async () => {
+      const error = new Error(
+        'An error occurred while resending verification code',
+      );
+      authService.resendVerification.mockRejectedValue(error);
+
+      await expect(
+        controller.resendVerification(mockDto, mockUser),
+      ).rejects.toThrow('An error occurred while resending verification code');
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        mockUser.email,
+      );
+    });
+
+    it('should pass correct user email from authenticated user', async () => {
+      const differentUser: SafeUser = {
+        ...mockUser,
+        email: 'different@example.com',
+        id: 'different_user_id',
+      };
+
+      const expectedResponse = {
+        message: 'New verification code has been sent to your email',
+      };
+
+      authService.resendVerification.mockResolvedValue(expectedResponse);
+
+      const result = await controller.resendVerification(
+        mockDto,
+        differentUser,
+      );
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        differentUser.email,
+      );
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('should handle empty turnstile token gracefully', async () => {
+      const emptyTokenDto: ResendVerificationDto = {
+        turnstileToken: '',
+      };
+
+      const expectedResponse = {
+        message: 'New verification code has been sent to your email',
+      };
+
+      authService.resendVerification.mockResolvedValue(expectedResponse);
+
+      const result = await controller.resendVerification(
+        emptyTokenDto,
+        mockUser,
+      );
+
+      expect(authService.resendVerification).toHaveBeenCalledWith(
+        mockUser.email,
+      );
+      expect(result).toEqual(expectedResponse);
     });
   });
 });

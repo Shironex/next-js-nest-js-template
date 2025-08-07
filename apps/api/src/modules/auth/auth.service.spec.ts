@@ -1152,4 +1152,200 @@ describe('AuthService', () => {
       );
     });
   });
+
+  describe('resendVerification', () => {
+    const mockEmail = 'test@example.com';
+    const mockCode = '87654321';
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully resend verification code', async () => {
+      const mockUser = createMockUser({
+        email: mockEmail,
+        emailVerified: false,
+      });
+
+      userRepository.findByEmail.mockResolvedValue(mockUser);
+      verificationCodeService.createEmailVerificationCode.mockResolvedValue(
+        mockCode,
+      );
+      mailService.sendVerificationCode.mockResolvedValue(undefined);
+
+      const result = await service.resendVerification(mockEmail);
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
+      expect(
+        verificationCodeService.createEmailVerificationCode,
+      ).toHaveBeenCalledWith(mockUser);
+      expect(mailService.sendVerificationCode).toHaveBeenCalledWith(
+        mockEmail,
+        mockCode,
+      );
+      expect(result).toEqual({
+        message: 'New verification code has been sent to your email',
+      });
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Resend verification attempt',
+        { email: mockEmail },
+      );
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Verification code resent successfully',
+        {
+          email: mockEmail,
+          userId: mockUser.id,
+        },
+      );
+    });
+
+    it('should throw BadRequestException when user not found', async () => {
+      userRepository.findByEmail.mockResolvedValue(null);
+
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        'User not found',
+      );
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Resend verification failed - user not found',
+        { email: mockEmail },
+      );
+      expect(
+        verificationCodeService.createEmailVerificationCode,
+      ).not.toHaveBeenCalled();
+      expect(mailService.sendVerificationCode).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when email already verified', async () => {
+      const mockUser = createMockUser({
+        email: mockEmail,
+        emailVerified: true,
+      });
+
+      userRepository.findByEmail.mockResolvedValue(mockUser);
+
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        'Your email is already verified',
+      );
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Resend verification skipped - email already verified',
+        {
+          email: mockEmail,
+          userId: mockUser.id,
+        },
+      );
+      expect(
+        verificationCodeService.createEmailVerificationCode,
+      ).not.toHaveBeenCalled();
+      expect(mailService.sendVerificationCode).not.toHaveBeenCalled();
+    });
+
+    it('should throw InternalServerErrorException when code generation fails', async () => {
+      const mockUser = createMockUser({
+        email: mockEmail,
+        emailVerified: false,
+      });
+
+      userRepository.findByEmail.mockResolvedValue(mockUser);
+      verificationCodeService.createEmailVerificationCode.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        'An error occurred while resending verification code',
+      );
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
+      expect(
+        verificationCodeService.createEmailVerificationCode,
+      ).toHaveBeenCalledWith(mockUser);
+      expect(mailService.sendVerificationCode).not.toHaveBeenCalled();
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to resend verification code',
+        {
+          email: mockEmail,
+          userId: mockUser.id,
+          error: 'Database error',
+          stack: expect.any(String),
+        },
+      );
+    });
+
+    it('should throw InternalServerErrorException when email sending fails', async () => {
+      const mockUser = createMockUser({
+        email: mockEmail,
+        emailVerified: false,
+      });
+
+      userRepository.findByEmail.mockResolvedValue(mockUser);
+      verificationCodeService.createEmailVerificationCode.mockResolvedValue(
+        mockCode,
+      );
+      mailService.sendVerificationCode.mockRejectedValue(
+        new Error('Email service error'),
+      );
+
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        'An error occurred while resending verification code',
+      );
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
+      expect(
+        verificationCodeService.createEmailVerificationCode,
+      ).toHaveBeenCalledWith(mockUser);
+      expect(mailService.sendVerificationCode).toHaveBeenCalledWith(
+        mockEmail,
+        mockCode,
+      );
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to resend verification code',
+        {
+          email: mockEmail,
+          userId: mockUser.id,
+          error: 'Email service error',
+          stack: expect.any(String),
+        },
+      );
+    });
+
+    it('should handle unexpected errors during resend process', async () => {
+      const mockUser = createMockUser({
+        email: mockEmail,
+        emailVerified: false,
+      });
+
+      userRepository.findByEmail.mockResolvedValue(mockUser);
+      verificationCodeService.createEmailVerificationCode.mockResolvedValue(
+        mockCode,
+      );
+      mailService.sendVerificationCode.mockResolvedValue(undefined);
+
+      // Mock logger.info to throw an error to simulate unexpected issues
+      mockLogger.info.mockImplementationOnce(() => {
+        throw new Error('Unexpected error');
+      });
+
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      await expect(service.resendVerification(mockEmail)).rejects.toThrow(
+        'An error occurred while resending verification code',
+      );
+    });
+  });
 });

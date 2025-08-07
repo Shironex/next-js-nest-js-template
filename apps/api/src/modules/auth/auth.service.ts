@@ -311,6 +311,58 @@ export class AuthService {
     };
   }
 
+  async resendVerification(email: string): Promise<{
+    message: string;
+  }> {
+    this.logger.info('Resend verification attempt', { email });
+
+    const user = await this.usersRepository.findByEmail(email);
+
+    if (!user) {
+      this.logger.warn('Resend verification failed - user not found', {
+        email,
+      });
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.emailVerified) {
+      this.logger.info('Resend verification skipped - email already verified', {
+        email,
+        userId: user.id,
+      });
+      throw new BadRequestException('Your email is already verified');
+    }
+
+    try {
+      // Generate new verification code (this will delete any existing codes)
+      const code =
+        await this.verificationCodeService.createEmailVerificationCode(user);
+
+      // Send the new verification code
+      await this.mailService.sendVerificationCode(user.email, code);
+
+      this.logger.info('Verification code resent successfully', {
+        email,
+        userId: user.id,
+      });
+
+      return {
+        message: 'New verification code has been sent to your email',
+      };
+    } catch (error) {
+      this.logger.error('Failed to resend verification code', {
+        email,
+        userId: user?.id,
+        error: error.message,
+        stack: error.stack,
+      });
+
+      throw new InternalServerErrorException(
+        'An error occurred while resending verification code',
+      );
+    }
+  }
+
   async forgotPassword(email: string): Promise<{
     message: string;
   }> {

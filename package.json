@@ -48,6 +48,7 @@
       "@swc/core",
       "@tailwindcss/oxide",
       "core-js-pure",
+      "esbuild",
       "prisma",
       "sharp"
     ]

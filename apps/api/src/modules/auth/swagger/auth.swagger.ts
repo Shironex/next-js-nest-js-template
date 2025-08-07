@@ -18,6 +18,7 @@ import {
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { VerifyEmailDto } from '../dto/verify-email.dto';
+import { ResendVerificationDto } from '../dto/resend-verification.dto';
 
 // Register endpoint documentation
 export const RegisterDocs = () =>
@@ -708,6 +709,109 @@ export const LogoutDocs = () =>
             example: 'Wylogowano pomyślnie',
           },
         },
+      },
+    }),
+  );
+
+// Resend verification endpoint documentation
+export const ResendVerificationDocs = () =>
+  ApiDocs(
+    HttpCode(HttpStatus.OK),
+    ApiOperation({
+      summary: 'Resend email verification code',
+      description:
+        "Resends a new verification code to the authenticated user's email address. This endpoint requires the user to be logged in but not yet verified. The new verification code expires after 10 minutes and replaces any previously sent codes. This endpoint is protected by CAPTCHA and rate limiting to prevent abuse.",
+    }),
+    ApiBody({
+      type: ResendVerificationDto,
+      description: 'Resend verification request with CAPTCHA token',
+      examples: {
+        validRequest: {
+          summary: 'Valid resend request',
+          value: {
+            turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 200,
+      description: 'New verification code sent successfully',
+      type: ApiSuccessResponseDto,
+      example: {
+        success: true,
+        message: 'Request completed successfully',
+        code: 200,
+        data: {
+          message: 'New verification code has been sent to your email',
+        },
+      },
+    }),
+    ApiBadRequestResponse({
+      description: 'Invalid request or business logic errors',
+      type: ApiErrorResponseDto,
+      examples: {
+        alreadyVerified: {
+          summary: 'Email already verified',
+          value: {
+            success: false,
+            message: 'Your email is already verified',
+            code: 400,
+            timestamp: '2024-01-15T10:30:00.000Z',
+            path: '/auth/resend-verification',
+          },
+        },
+        validationError: {
+          summary: 'Validation errors',
+          value: {
+            success: false,
+            message: 'Validation failed',
+            code: 400,
+            errors: [
+              {
+                field: 'turnstileToken',
+                message: 'turnstileToken should not be empty',
+                value: '',
+              },
+            ],
+            timestamp: '2024-01-15T10:30:00.000Z',
+            path: '/auth/resend-verification',
+          },
+        },
+      },
+    }),
+    ApiResponse({
+      status: 401,
+      description: 'Authentication required - user must be logged in',
+      type: ApiErrorResponseDto,
+      example: {
+        success: false,
+        message: 'Unauthorized',
+        code: 401,
+        timestamp: '2024-01-15T10:30:00.000Z',
+        path: '/auth/resend-verification',
+      },
+    }),
+    ApiTooManyRequestsResponse({
+      description: 'Rate limit exceeded for verification resend attempts',
+      type: ApiErrorResponseDto,
+      example: {
+        success: false,
+        message: 'Rate limit exceeded',
+        code: 429,
+        timestamp: '2024-01-15T10:30:00.000Z',
+        path: '/auth/resend-verification',
+      },
+    }),
+    ApiInternalServerErrorResponse({
+      description: 'Internal server error during verification resend',
+      type: ApiErrorResponseDto,
+      example: {
+        success: false,
+        message: 'Internal server error',
+        code: 500,
+        timestamp: '2024-01-15T10:30:00.000Z',
+        path: '/auth/resend-verification',
       },
     }),
   );
