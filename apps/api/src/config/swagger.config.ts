@@ -7,7 +7,7 @@ import { join } from 'path';
 export const setupSwagger = (app: INestApplication, environment: string) => {
   // Read version from package.json
   const packageJson = JSON.parse(
-    readFileSync(join(__dirname, '../../../package.json'), 'utf8'),
+    readFileSync(join(__dirname, '../../package.json'), 'utf8'),
   );
   const version = packageJson.version;
 

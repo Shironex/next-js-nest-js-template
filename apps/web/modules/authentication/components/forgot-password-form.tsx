@@ -52,130 +52,123 @@ const ForgotPasswordForm = () => {
 
   if (emailSent) {
     return (
-      <AuthLayout
-        title="Sprawdź swoją skrzynkę email"
-        subtitle="Wysłaliśmy Ci link do resetowania hasła"
-      >
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+      <AuthLayout>
+        <div className="space-y-6 pt-10 md:pt-0">
           <motion.div
-            className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            className="text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            <CheckCircle className="h-8 w-8 text-green-600" />
-          </motion.div>
+            <motion.div
+              className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+            >
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">
-              Link do resetowania hasła został wysłany!
-            </h3>
-            <p className="mb-6 text-gray-600">
-              Sprawdź swoją skrzynkę email i postępuj zgodnie z instrukcjami, aby zresetować hasło.
-              Link wygaśnie za 1 godzinę.
-            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <h3 className="mb-4 text-lg font-semibold">Reset link sent!</h3>
+              <p className="text-muted-foreground mb-6">
+                Check your email and follow the instructions to reset your password. The link will
+                expire in 1 hour.
+              </p>
 
-            <div className="space-y-3">
-              <Button onClick={() => setEmailSent(false)} variant="outline" className="w-full">
-                Wyślij ponownie
-              </Button>
-
-              <Link href={APP_ROUTES.LOGIN}>
-                <Button variant="ghost" className="w-full">
-                  Powrót do logowania
+              <div className="space-y-3">
+                <Button onClick={() => setEmailSent(false)} variant="outline" className="w-full">
+                  Send again
                 </Button>
-              </Link>
-            </div>
+
+                <Link href={APP_ROUTES.LOGIN}>
+                  <Button variant="ghost" className="w-full">
+                    Back to sign in
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </AuthLayout>
     )
   }
 
   return (
-    <AuthLayout
-      title="Zapomniałeś hasła?"
-      subtitle="Wpisz swój email, a wyślemy Ci link do resetowania"
-    >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-medium text-gray-700">Adres email</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+    <AuthLayout>
+      <div className="space-y-6 pt-10 md:pt-0">
+        <div className="space-y-2 text-center">
+          <h1 className="text-3xl font-bold">Forgot password</h1>
+          <p className="text-muted-foreground">
+            Enter your email address and we&apos;ll send you a link to reset your password
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
                     <Input
-                      placeholder="Wprowadź swój adres email"
+                      placeholder="name@example.com"
                       type="email"
-                      className="pl-10"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect="off"
                       {...field}
                     />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="turnstileToken"
-            render={() => (
-              <FormItem>
-                <FormControl>
-                  <Turnstile onSuccess={handleTurnstileVerify} onError={handleTurnstileError} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="turnstileToken"
+              render={() => (
+                <FormItem>
+                  <FormControl>
+                    <div className="flex justify-start">
+                      <Turnstile onSuccess={handleTurnstileVerify} onError={handleTurnstileError} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <motion.div
-            className="space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Button
-              type="submit"
-              className="w-full bg-amber-600 text-white transition-colors hover:bg-amber-700"
-              disabled={forgotPassword.isPending}
-            >
+            <Button type="submit" className="w-full" disabled={forgotPassword.isPending}>
               {forgotPassword.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Wysyłanie linku...
+                  Sending...
                 </>
               ) : (
-                'Wyślij link resetujący'
+                'Send reset link'
               )}
             </Button>
+          </form>
+        </Form>
 
-            <div className="text-center">
-              <span className="text-sm text-gray-600">Pamiętasz hasło? </span>
-              <Link
-                href={APP_ROUTES.LOGIN}
-                className="text-sm font-medium text-amber-600 transition-colors hover:text-amber-700"
-              >
-                Zaloguj się
-              </Link>
-            </div>
-          </motion.div>
-        </form>
-      </Form>
+        <div className="text-center text-sm">
+          Remember your password?{' '}
+          <Link
+            href={APP_ROUTES.LOGIN}
+            className="text-primary font-medium underline-offset-4 hover:underline"
+          >
+            Sign in
+          </Link>
+        </div>
+      </div>
     </AuthLayout>
   )
 }

@@ -26,7 +26,8 @@
       "Bash(rm:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm --filter=api test products.controller.spec.ts products.service.spec.ts)",
-      "Bash(pnpm --filter=api test wood-types.controller.spec.ts wood-types.service.spec.ts eras.controller.spec.ts eras.service.spec.ts conditions.controller.spec.ts conditions.service.spec.ts)"
+      "Bash(pnpm --filter=api test wood-types.controller.spec.ts wood-types.service.spec.ts eras.controller.spec.ts eras.service.spec.ts conditions.controller.spec.ts conditions.service.spec.ts)",
+      "Bash(true)"
     ],
     "deny": []
   }
