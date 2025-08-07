@@ -27,7 +27,12 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm --filter=api test products.controller.spec.ts products.service.spec.ts)",
       "Bash(pnpm --filter=api test wood-types.controller.spec.ts wood-types.service.spec.ts eras.controller.spec.ts eras.service.spec.ts conditions.controller.spec.ts conditions.service.spec.ts)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(pnpm --filter=web typecheck)",
+      "Bash(pnpm --filter=web lint)",
+      "Bash(pnpm --filter=web format)",
+      "Bash(pnpm --filter=@workspace/ui typecheck)",
+      "Bash(pnpm --filter=@workspace/ui lint)"
     ],
     "deny": []
   }
