@@ -4,8 +4,11 @@ import { Button } from '@workspace/ui/components/button'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useCurrentUser } from '../../modules/authentication/hooks/use-current-user'
 
 export default function Hero() {
+  const { isUserAuth, isLoading } = useCurrentUser()
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -53,9 +56,19 @@ export default function Hero() {
               intuitive platform designed for modern teams.
             </p>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <Button asChild size="lg" className="font-medium">
-                <Link href="/auth/register">Get Started for Free</Link>
-              </Button>
+              {!isLoading && (
+                <>
+                  {isUserAuth ? (
+                    <Button asChild size="lg" className="font-medium">
+                      <Link href="/dashboard">Go to Dashboard</Link>
+                    </Button>
+                  ) : (
+                    <Button asChild size="lg" className="font-medium">
+                      <Link href="/auth/register">Get Started for Free</Link>
+                    </Button>
+                  )}
+                </>
+              )}
               <Button asChild size="lg" variant="outline" className="font-medium">
                 <Link href="#demo">Request Demo</Link>
               </Button>

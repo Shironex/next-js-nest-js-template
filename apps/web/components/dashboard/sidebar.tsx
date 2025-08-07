@@ -28,6 +28,7 @@ import {
   Bell,
   HelpCircle,
   LogOut,
+  Home,
 } from 'lucide-react'
 
 interface NavItem {
@@ -71,6 +72,12 @@ const mainNavItems: NavItem[] = [
 ]
 
 const bottomNavItems: NavItem[] = [
+  {
+    title: 'Home',
+    href: '/',
+    icon: <Home className="h-5 w-5" />,
+    isActive: (pathname) => pathname === '/',
+  },
   {
     title: 'Settings',
     href: '/dashboard/settings',
@@ -344,7 +351,7 @@ function NavItem({
             <Link
               href={item.href}
               className={cn(
-                'group flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                'flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -354,7 +361,7 @@ function NavItem({
               <div
                 className={cn(
                   'flex h-6 w-6 items-center justify-center rounded-md',
-                  isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+                  isActive ? 'text-primary' : 'text-inherit',
                 )}
               >
                 {item.icon}
@@ -394,7 +401,7 @@ function NavItem({
       <Link
         href={item.href}
         className={cn(
-          'group flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
           isActive
             ? 'bg-primary/10 text-primary'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -404,7 +411,7 @@ function NavItem({
         <div
           className={cn(
             'flex h-6 w-6 items-center justify-center rounded-md',
-            isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+            isActive ? 'text-primary' : 'text-inherit',
           )}
         >
           {item.icon}
@@ -451,7 +458,7 @@ function MobileNavItem({
       <Link
         href={item.href}
         className={cn(
-          'group flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          'flex h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
           isActive
             ? 'bg-primary/10 text-primary'
             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -461,7 +468,7 @@ function MobileNavItem({
         <div
           className={cn(
             'flex h-6 w-6 items-center justify-center rounded-md',
-            isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
+            isActive ? 'text-primary' : 'text-inherit',
           )}
         >
           {item.icon}
