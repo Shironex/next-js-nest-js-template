@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    container_name: database
+    ports:
+      - 5432:5432
+    networks: [example]
+    environment:
+      POSTGRES_PASSWORD: example
+      PGDATA: /data/postgres
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - example:/data/postgres
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+      - '8001:8001'
+    networks: [example]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD-SHELL', 'redis-cli ping | grep PONG']
+      interval: 1s
+      timeout: 3s
+      retries: 5
+  mailpit:
+    image: axllent/mailpit
+    container_name: mail_server
+    restart: unless-stopped
+    ports: ['1025:1025', '8025:8025']
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks: [example]
+  s3:
+    build:
+      context: ./packages/s3rver
+      dockerfile: Dockerfile
+    ports:
+      - '4569:4569'
+    volumes:
+      - './packages/s3rver/example:/home/app/s3rver/example'
+    networks: [example]
+
+networks:
+  example:
+    driver: bridge
+
+volumes:
+  example:
+  redis_data:

@@ -1,0 +1,11 @@
+<!-- Sample policy -->
+<CORSConfiguration>
+    <CORSRule>
+        <AllowedOrigin>*</AllowedOrigin>
+        <AllowedMethod>POST</AllowedMethod>
+        <AllowedMethod>GET</AllowedMethod>
+        <AllowedMethod>PUT</AllowedMethod>
+        <MaxAgeSeconds>3000</MaxAgeSeconds>
+        <AllowedHeader>*</AllowedHeader>
+    </CORSRule>
+</CORSConfiguration>

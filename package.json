@@ -1,0 +1,55 @@
+{
+  "name": "example-monorepo",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "release": "pnpm build && pnpm lint && pnpm typecheck",
+    "release:patch": "npm version patch && git push --tags",
+    "release:minor": "npm version minor && git push --tags",
+    "release:major": "npm version major && git push --tags",
+    "commit": "git add . && git commit",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.5.1",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "turbo": "^2.4.2",
+    "typescript": "5.7.3"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "packageManager": "pnpm@10.4.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "core-js-pure",
+      "prisma",
+      "sharp"
+    ]
+  }
+}

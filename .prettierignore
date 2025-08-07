@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Generated files
+**/generated/
+**/coverage/
+**/.turbo/
+**/.next/
+**/dist/
+**/build/
+
+# Logs
+**/logs/
+**/*.log
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+
+# Prisma
+prisma/client.js
+prisma/client.d.ts
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/

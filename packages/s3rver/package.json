@@ -1,0 +1,15 @@
+{
+  "name": "s3-server",
+  "version": "1.0.0",
+  "description": "Fake S3 server for local development",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node ."
+  },
+  "engines": {
+    "node": ">=22.4.0"
+  },
+  "dependencies": {
+    "s3rver": "^3.7.1"
+  }
+}
