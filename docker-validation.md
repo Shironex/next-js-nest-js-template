@@ -30,7 +30,7 @@ This document validates the production Docker setup for the monorepo containing 
   - Installs dependencies with frozen lockfile
   - Builds Next.js application with standalone output
   - Copies standalone build and static assets
-- **Health Check**: HTTP health check
+- **Health Check**: HTTP health check on root route (/)
 - **Port**: 3000
 
 ## Configuration Updates
