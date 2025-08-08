@@ -19,14 +19,14 @@ export function useAdminAuth() {
 
     // If there's an error or user is not authenticated, redirect to home
     if (isError || !isUserAuth) {
-      toast.error('Musisz być zalogowany aby uzyskać dostęp do panelu administracyjnego')
+      toast.error('You must be logged in to access the admin panel')
       router.push('/?redirect=admin')
       return
     }
 
     // If user is authenticated but doesn't have admin role, redirect
     if (user && user.role !== 'ADMIN') {
-      toast.error('Nie masz uprawnień administratora')
+      toast.error('You do not have administrator permissions')
       router.push('/')
       return
     }

@@ -16,11 +16,11 @@ export class RegisterDto {
   @IsEmail(
     {},
     {
-      message: 'Niepoprawny adres email',
+      message: 'Invalid email address',
     },
   )
   @IsNotEmpty({
-    message: 'Adres email jest wymagany',
+    message: 'Email address is required',
   })
   email: string;
 
@@ -33,10 +33,10 @@ export class RegisterDto {
       '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$',
   })
   @IsString({
-    message: 'Niepoprawny format hasła',
+    message: 'Invalid password format',
   })
   @IsNotEmpty({
-    message: 'Hasło jest wymagane',
+    message: 'Password is required',
   })
   @IsStrongPassword(
     {
@@ -48,7 +48,7 @@ export class RegisterDto {
     },
     {
       message:
-        'Hasło musi zawierać co najmniej 8 znaków, 1 wielką literę, 1 małą literę, 1 cyfrę i 1 symbol',
+        'Password must contain at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 digit and 1 symbol',
     },
   )
   password: string;
@@ -58,7 +58,7 @@ export class RegisterDto {
     example: '+48 123456789',
   })
   @IsString({
-    message: 'Niepoprawny format numeru telefonu',
+    message: 'Invalid phone number format',
   })
   @IsOptional()
   phoneNumber: string;
@@ -70,10 +70,10 @@ export class RegisterDto {
     maxLength: 30,
   })
   @IsString({
-    message: 'Niepoprawny format nazwy użytkownika',
+    message: 'Invalid username format',
   })
   @IsNotEmpty({
-    message: 'Nazwa użytkownika jest wymagana',
+    message: 'Username is required',
   })
   username: string;
 
@@ -82,10 +82,10 @@ export class RegisterDto {
     example: '0.Ab1cd2Ef3gH4...',
   })
   @IsString({
-    message: 'Niepoprawny format kodu captcha',
+    message: 'Invalid captcha code format',
   })
   @IsNotEmpty({
-    message: 'Weryfikacja captcha jest wymagana',
+    message: 'Captcha verification is required',
   })
   turnstileToken: string;
 }

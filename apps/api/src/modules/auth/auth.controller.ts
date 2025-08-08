@@ -153,6 +153,6 @@ export class AuthController {
       response.cookie(cookie.name, cookie.value, cookie.attributes as any);
     }
 
-    return { message: 'Wylogowano pomyślnie' };
+    return { message: 'Logout successful' };
   }
 }

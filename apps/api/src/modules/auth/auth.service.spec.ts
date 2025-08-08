@@ -199,9 +199,9 @@ describe('AuthService', () => {
 
       expect(result).toEqual({
         message:
-          'Rejestracja zakończona pomyślnie. Sprawdź swoją skrzynkę pocztową w celu weryfikacji konta.',
+          'Registration completed successfully. Check your email inbox to verify your account.',
         nextSteps:
-          'Kliknij link weryfikacyjny w wysłanym mailu, aby aktywować swoje konto.',
+          'Click the verification link in the sent email to activate your account.',
       });
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
@@ -364,7 +364,7 @@ describe('AuthService', () => {
       const result = await service.verifyEmail(mockEmail, mockCode);
 
       expect(result).toEqual({
-        message: 'Konto zostało zweryfikowane',
+        message: 'Account has been verified',
       });
       expect(userRepository.findByEmail).toHaveBeenCalledWith(mockEmail);
       expect(
@@ -404,7 +404,7 @@ describe('AuthService', () => {
       const result = await service.verifyEmail(mockEmail, mockCode);
 
       expect(result).toEqual({
-        message: 'Konto zostało już zweryfikowane',
+        message: 'Account is already verified',
       });
       expect(mockLogger.info).toHaveBeenCalledWith('Email already verified', {
         email: mockEmail,
@@ -422,7 +422,7 @@ describe('AuthService', () => {
       );
 
       await expect(service.verifyEmail(mockEmail, mockCode)).rejects.toThrow(
-        'Kod weryfikacji jest nieprawidłowy',
+        'Verification code is invalid',
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -450,7 +450,7 @@ describe('AuthService', () => {
       verificationCodeService.isCodeValid.mockReturnValue(false);
 
       await expect(service.verifyEmail(mockEmail, mockCode)).rejects.toThrow(
-        'Kod weryfikacji wygasł lub jest nieprawidłowy',
+        'Verification code is expired or invalid',
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -480,7 +480,7 @@ describe('AuthService', () => {
       userRepository.update.mockResolvedValue(undefined as any);
 
       await expect(service.verifyEmail(mockEmail, mockCode)).rejects.toThrow(
-        'Wystąpił błąd podczas weryfikacji adresu email',
+        'An error occurred during email verification',
       );
 
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -660,7 +660,7 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual({
-        message: 'Zalogowano pomyślnie',
+        message: 'Login successful',
         emailVerified: true,
       });
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
@@ -700,7 +700,7 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual({
-        message: 'Zalogowano pomyślnie',
+        message: 'Login successful',
         emailVerified: false,
       });
     });
@@ -993,7 +993,7 @@ describe('AuthService', () => {
         mockResetToken.userId,
       );
       expect(result).toEqual({
-        message: 'Hasło zostało zresetowane pomyślnie',
+        message: 'Password has been reset successfully',
       });
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Password reset successful',

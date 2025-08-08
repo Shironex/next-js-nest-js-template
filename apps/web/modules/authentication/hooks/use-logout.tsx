@@ -16,7 +16,7 @@ export function useLogout({ autoRedirect }: UseLogout) {
   return useMutation({
     mutationFn: () => authService.logout(),
     onSuccess: (data) => {
-      toast.success(data.data.message || 'Wylogowano pomyślnie')
+      toast.success(data.data.message || 'Logout successful')
       queryClient.setQueryData(authKeys.me(), null)
     },
     onSettled: () => {

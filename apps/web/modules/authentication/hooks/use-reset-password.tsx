@@ -17,7 +17,7 @@ export function useResetPassword() {
         turnstileToken: data.turnstileToken,
       }),
     onSuccess: (response) => {
-      toast.success(response._original?.message || 'Hasło zostało zresetowane pomyślnie')
+      toast.success(response._original?.message || 'Password has been reset successfully')
     },
     onError: handleError,
   })

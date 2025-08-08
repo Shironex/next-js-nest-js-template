@@ -48,7 +48,7 @@ export class TurnstileGuard implements CanActivate {
     });
 
     if (!turnstileToken) {
-      throw new BadRequestException('Brak tokenu captcha');
+      throw new BadRequestException('Missing captcha token');
     }
 
     const validationResult = await this.turnstileService.validateToken(
@@ -57,7 +57,7 @@ export class TurnstileGuard implements CanActivate {
     );
 
     if (!validationResult.isValid) {
-      throw new BadRequestException('Weryfikacja captcha nie powiodła się');
+      throw new BadRequestException('Captcha verification failed');
     }
 
     this.logger.info('Turnstile validation successful', {

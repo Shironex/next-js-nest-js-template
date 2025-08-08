@@ -72,8 +72,8 @@ const ResetPasswordForm = () => {
   if (!token) {
     return (
       <AuthLayout
-        title="Nieprawidłowy link resetujący"
-        subtitle="Link do resetowania hasła jest nieprawidłowy lub wygasł"
+        title="Invalid reset link"
+        subtitle="The password reset link is invalid or expired"
       >
         <motion.div
           className="text-center"
@@ -95,11 +95,9 @@ const ResetPasswordForm = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <h3 className="mb-4 text-lg font-semibold text-gray-900">
-              Nieprawidłowy lub wygasły link
-            </h3>
+            <h3 className="mb-4 text-lg font-semibold text-gray-900">Invalid or expired link</h3>
             <p className="mb-6 text-gray-600">
-              Ten link do resetowania hasła jest nieprawidłowy lub wygasł. Proszę poprosić o nowy.
+              This password reset link is invalid or expired. Please request a new one.
             </p>
 
             <div className="space-y-3">
@@ -125,8 +123,8 @@ const ResetPasswordForm = () => {
   if (resetSuccess) {
     return (
       <AuthLayout
-        title="Hasło zostało zresetowane"
-        subtitle="Twoje hasło zostało pomyślnie zaktualizowane"
+        title="Password has been reset"
+        subtitle="Your password has been successfully updated"
       >
         <motion.div
           className="text-center"
@@ -149,7 +147,7 @@ const ResetPasswordForm = () => {
             transition={{ delay: 0.4 }}
           >
             <h3 className="mb-4 text-lg font-semibold text-gray-900">
-              Hasło zostało pomyślnie zaktualizowane!
+              Password has been successfully updated!
             </h3>
             <p className="mb-6 text-gray-600">Możesz teraz zalogować się używając nowego hasła.</p>
 
@@ -166,7 +164,7 @@ const ResetPasswordForm = () => {
   }
 
   return (
-    <AuthLayout title="Zresetuj swoje hasło" subtitle="Wprowadź nowe hasło poniżej">
+    <AuthLayout title="Reset your password" subtitle="Enter your new password below">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
@@ -174,11 +172,11 @@ const ResetPasswordForm = () => {
             name="newPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-medium text-gray-700">Nowe hasło</FormLabel>
+                <FormLabel className="font-medium text-gray-700">New password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      placeholder="Wprowadź nowe hasło"
+                      placeholder="Enter new password"
                       type={showPassword ? 'text' : 'password'}
                       className="pr-10"
                       {...field}
@@ -202,11 +200,11 @@ const ResetPasswordForm = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="font-medium text-gray-700">Potwierdź nowe hasło</FormLabel>
+                <FormLabel className="font-medium text-gray-700">Confirm new password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
-                      placeholder="Potwierdź nowe hasło"
+                      placeholder="Confirm new password"
                       type={showConfirmPassword ? 'text' : 'password'}
                       className="pr-10"
                       {...field}
@@ -259,12 +257,12 @@ const ResetPasswordForm = () => {
                   Aktualizowanie hasła...
                 </>
               ) : (
-                'Zaktualizuj hasło'
+                'Update password'
               )}
             </Button>
 
             <div className="text-center">
-              <span className="text-sm text-gray-600">Pamiętasz hasło? </span>
+              <span className="text-sm text-gray-600">Remember your password? </span>
               <Link
                 href={APP_ROUTES.LOGIN}
                 className="text-sm font-medium text-amber-600 transition-colors hover:text-amber-700"

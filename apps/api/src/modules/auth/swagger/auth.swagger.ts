@@ -64,9 +64,9 @@ export const RegisterDocs = () =>
         code: 201,
         data: {
           message:
-            'Rejestracja zakończona pomyślnie. Sprawdź swoją skrzynkę pocztową w celu weryfikacji konta.',
+            'Registration completed successfully. Check your email inbox to verify your account.',
           nextSteps:
-            'Kliknij link weryfikacyjny w wysłanym mailu, aby aktywować swoje konto.',
+            'Click the verification link in the sent email to activate your account.',
         },
       },
     }),
@@ -234,12 +234,12 @@ export const LoginDocs = () =>
               },
               {
                 field: 'password',
-                message: 'Hasło jest wymagane',
+                message: 'Password is required',
                 value: '',
               },
               {
                 field: 'turnstileToken',
-                message: 'Weryfikacja captcha jest wymagana',
+                message: 'Captcha verification is required',
                 value: '',
               },
             ],
@@ -346,7 +346,7 @@ export const VerifyEmailDocs = () =>
         message: 'Request completed successfully',
         code: 200,
         data: {
-          message: 'Konto zostało zweryfikowane',
+          message: 'Account has been verified',
         },
       },
     }),
@@ -359,7 +359,7 @@ export const VerifyEmailDocs = () =>
         message: 'Request completed successfully',
         code: 200,
         data: {
-          message: 'Konto zostało już zweryfikowane',
+          message: 'Account is already verified',
         },
       },
     }),
@@ -371,7 +371,7 @@ export const VerifyEmailDocs = () =>
           summary: 'Invalid or expired verification code',
           value: {
             success: false,
-            message: 'Kod weryfikacji jest nieprawidłowy',
+            message: 'Verification code is invalid',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/verify-email',
@@ -381,7 +381,7 @@ export const VerifyEmailDocs = () =>
           summary: 'Expired verification code',
           value: {
             success: false,
-            message: 'Kod weryfikacji wygasł lub jest nieprawidłowy',
+            message: 'Verification code is expired or invalid',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/verify-email',
@@ -604,7 +604,7 @@ export const ResetPasswordDocs = () =>
         message: 'Request completed successfully',
         code: 200,
         data: {
-          message: 'Hasło zostało zresetowane pomyślnie',
+          message: 'Password has been reset successfully',
         },
       },
     }),
@@ -616,7 +616,7 @@ export const ResetPasswordDocs = () =>
           summary: 'Invalid or expired reset token',
           value: {
             success: false,
-            message: 'Token jest nieprawidłowy lub wygasł',
+            message: 'Token is invalid or expired',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/reset-password',
@@ -706,7 +706,7 @@ export const LogoutDocs = () =>
         properties: {
           message: {
             type: 'string',
-            example: 'Wylogowano pomyślnie',
+            example: 'Logout successful',
           },
         },
       },

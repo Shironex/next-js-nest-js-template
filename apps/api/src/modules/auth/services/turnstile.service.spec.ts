@@ -71,7 +71,7 @@ describe('TurnstileService', () => {
 
       expect(result).toEqual({
         isValid: false,
-        errorCodes: ['Brak tokenu'],
+        errorCodes: ['Missing token'],
       });
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -85,7 +85,7 @@ describe('TurnstileService', () => {
 
       expect(result).toEqual({
         isValid: false,
-        errorCodes: ['Brak tokenu'],
+        errorCodes: ['Missing token'],
       });
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -99,7 +99,7 @@ describe('TurnstileService', () => {
 
       expect(result).toEqual({
         isValid: false,
-        errorCodes: ['Brak tokenu'],
+        errorCodes: ['Missing token'],
       });
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -187,7 +187,7 @@ describe('TurnstileService', () => {
 
       expect(result).toEqual({
         isValid: false,
-        errorCodes: ['Wystąpił błąd podczas weryfikacji odpowiedzi captcha'],
+        errorCodes: ['An error occurred during captcha response verification'],
       });
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -209,7 +209,7 @@ describe('TurnstileService', () => {
 
       expect(result).toEqual({
         isValid: false,
-        errorCodes: ['Wystąpił błąd podczas weryfikacji tokenu'],
+        errorCodes: ['An error occurred during token verification'],
       });
 
       expect(mockLogger.error).toHaveBeenCalledWith(
