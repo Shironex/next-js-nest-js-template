@@ -1,0 +1,59 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js build output
+.next
+out
+
+# Environment variables
+.env*.local
+.env.development
+.env.test
+
+# Testing
+coverage
+jest.config.*
+.jest
+*.spec.*
+*.test.*
+
+# Development
+*.log
+logs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Linting and formatting
+.eslintrc.*
+.eslintignore
+.prettierrc.*
+.prettierignore
+
+# TypeScript
+tsconfig.json
+tsconfig.*.json
+
+# Misc
+.husky
+components.json

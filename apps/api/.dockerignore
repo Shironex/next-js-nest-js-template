@@ -1,0 +1,56 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Testing
+coverage
+test
+*.spec.ts
+*.test.ts
+jest.config.*
+.jest
+
+# Development
+.env.local
+.env.development
+.env.test
+*.log
+logs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Build artifacts
+dist
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Linting and formatting
+.eslintrc.*
+.eslintignore
+.prettierrc.*
+.prettierignore
+
+# TypeScript
+tsconfig.json
+tsconfig.*.json
+
+# Misc
+.husky
