@@ -52,6 +52,9 @@ pnpm --filter=api db:studio
 # Seed categories data
 pnpm --filter=api db:seed-categories
 
+# Listen to Stripe webhooks (requires Stripe CLI)
+pnpm --filter=api stripe:listen
+
 # Run API tests
 pnpm --filter=api test
 
@@ -218,3 +221,33 @@ S3 service is configured for file uploads with:
 - Local development using s3rver
 - Proper error handling and validation
 - Integration with NestJS multer middleware
+
+### Stripe Integration
+
+The project includes a full Stripe integration for subscription management:
+
+**Development Setup:**
+
+1. Install Stripe CLI: https://stripe.com/docs/stripe-cli
+2. Login to Stripe CLI: `stripe login`
+3. Start webhook forwarding: `pnpm --filter=api stripe:listen`
+4. Copy the webhook signing secret from the CLI output to your `.env` file
+
+**Features:**
+
+- Subscription management with multiple plans
+- Webhook processing with comprehensive audit logging
+- Role-based admin dashboard for webhook monitoring
+- Premium feature gating throughout the application
+- Automated email notifications for subscription events
+
+**Environment Variables:**
+
+- `STRIPE_SECRET_KEY`: Your Stripe secret key
+- `STRIPE_WEBHOOK_SECRET`: Webhook endpoint secret (from stripe listen command)
+- `STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key (for frontend)
+
+**Webhook Endpoint:**
+
+- URL: `/api/v1/stripe/webhook`
+- Events processed: subscription created/updated/deleted, invoice payment succeeded/failed, checkout completed
