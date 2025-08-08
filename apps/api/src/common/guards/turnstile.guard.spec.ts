@@ -98,7 +98,7 @@ describe('TurnstileGuard', () => {
       mockRequest.body = {}; // No turnstileToken
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
-        new BadRequestException('Brak tokenu captcha'),
+        new BadRequestException('Missing captcha token'),
       );
 
       expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -118,7 +118,7 @@ describe('TurnstileGuard', () => {
       mockRequest.body = { turnstileToken: '' };
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
-        new BadRequestException('Brak tokenu captcha'),
+        new BadRequestException('Missing captcha token'),
       );
 
       expect(turnstileService.validateToken).not.toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe('TurnstileGuard', () => {
       });
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
-        new BadRequestException('Weryfikacja captcha nie powiodła się'),
+        new BadRequestException('Captcha verification failed'),
       );
 
       expect(turnstileService.validateToken).toHaveBeenCalledWith(

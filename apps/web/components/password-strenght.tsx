@@ -58,7 +58,7 @@ const PasswordStrength: React.FC<PasswordStrengthProps> = React.memo(({ password
           <div
             className={`h-2 w-2 rounded-full ${password.length >= 8 ? 'bg-green-500' : 'bg-gray-300'}`}
           />
-          <span>Co najmniej 8 znaków</span>
+          <span>At least 8 characters</span>
         </div>
         <div className="flex items-center space-x-2">
           <div

@@ -4,14 +4,14 @@ export class RegisterResponseDto {
   @ApiProperty({
     description: 'Registration success message',
     example:
-      'Rejestracja zakończona pomyślnie. Sprawdź swoją skrzynkę pocztową w celu weryfikacji konta.',
+      'Registration completed successfully. Check your email inbox to verify your account.',
   })
   message: string;
 
   @ApiProperty({
     description: 'Next step instructions for the user',
     example:
-      'Kliknij link weryfikacyjny w wysłanym mailu, aby aktywować swoje konto.',
+      'Click the verification link in the sent email to activate your account.',
   })
   nextSteps: string;
 }

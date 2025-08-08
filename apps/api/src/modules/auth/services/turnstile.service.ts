@@ -55,7 +55,7 @@ export class TurnstileService {
         this.logger.warn('Empty or missing Turnstile token provided');
         return {
           isValid: false,
-          errorCodes: ['Brak tokenu'],
+          errorCodes: ['Missing token'],
         };
       }
 
@@ -84,7 +84,9 @@ export class TurnstileService {
 
         return {
           isValid: false,
-          errorCodes: ['Wystąpił błąd podczas weryfikacji odpowiedzi captcha'],
+          errorCodes: [
+            'An error occurred during captcha response verification',
+          ],
         };
       }
 
@@ -129,7 +131,7 @@ export class TurnstileService {
 
       return {
         isValid: false,
-        errorCodes: ['Wystąpił błąd podczas weryfikacji tokenu'],
+        errorCodes: ['An error occurred during token verification'],
       };
     }
   }

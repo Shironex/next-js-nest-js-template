@@ -142,7 +142,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Zalogowano pomyślnie',
+        message: 'Login successful',
         emailVerified: true,
       };
 
@@ -195,7 +195,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Zalogowano pomyślnie',
+        message: 'Login successful',
         emailVerified: false,
       };
 
@@ -229,7 +229,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Konto zostało zweryfikowane',
+        message: 'Account has been verified',
       };
 
       authService.verifyEmail.mockResolvedValue(expectedResponse);
@@ -286,7 +286,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Konto zostało już zweryfikowane',
+        message: 'Account is already verified',
       };
 
       authService.verifyEmail.mockResolvedValue(expectedResponse);
@@ -382,7 +382,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Hasło zostało zresetowane pomyślnie',
+        message: 'Password has been reset successfully',
       };
 
       authService.resetPassword.mockResolvedValue(expectedResponse);
@@ -403,7 +403,7 @@ describe('AuthController', () => {
         turnstileToken: 'mock-turnstile-token',
       };
 
-      const error = new Error('Token jest nieprawidłowy lub wygasł');
+      const error = new Error('Token is invalid or expired');
       authService.resetPassword.mockRejectedValue(error);
 
       await expect(controller.resetPassword(resetPasswordDto)).rejects.toThrow(
@@ -422,7 +422,7 @@ describe('AuthController', () => {
         turnstileToken: 'mock-turnstile-token',
       };
 
-      const error = new Error('Token jest nieprawidłowy lub wygasł');
+      const error = new Error('Token is invalid or expired');
       authService.resetPassword.mockRejectedValue(error);
 
       await expect(controller.resetPassword(resetPasswordDto)).rejects.toThrow(
@@ -441,7 +441,7 @@ describe('AuthController', () => {
         turnstileToken: 'mock-turnstile-token',
       };
 
-      const error = new Error('Token jest nieprawidłowy lub wygasł');
+      const error = new Error('Token is invalid or expired');
       authService.resetPassword.mockRejectedValue(error);
 
       await expect(controller.resetPassword(resetPasswordDto)).rejects.toThrow(
@@ -486,7 +486,7 @@ describe('AuthController', () => {
         mockCookie.attributes,
       );
       expect(result).toEqual({
-        message: 'Wylogowano pomyślnie',
+        message: 'Logout successful',
       });
     });
 
@@ -504,7 +504,7 @@ describe('AuthController', () => {
       expect(sessionCookieService.getCookieName).toHaveBeenCalled();
       expect(authService.logout).not.toHaveBeenCalled();
       expect(result).toEqual({
-        message: 'Wylogowano pomyślnie',
+        message: 'Logout successful',
       });
     });
 
@@ -524,7 +524,7 @@ describe('AuthController', () => {
       expect(sessionCookieService.getCookieName).toHaveBeenCalled();
       expect(authService.logout).not.toHaveBeenCalled();
       expect(result).toEqual({
-        message: 'Wylogowano pomyślnie',
+        message: 'Logout successful',
       });
     });
 
@@ -549,7 +549,7 @@ describe('AuthController', () => {
 
       expect(authService.logout).toHaveBeenCalledWith('mock-session-id');
       expect(result).toEqual({
-        message: 'Wylogowano pomyślnie',
+        message: 'Logout successful',
       });
     });
   });

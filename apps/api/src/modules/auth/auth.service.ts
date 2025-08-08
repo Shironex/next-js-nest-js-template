@@ -99,9 +99,9 @@ export class AuthService {
 
       return {
         message:
-          'Rejestracja zakończona pomyślnie. Sprawdź swoją skrzynkę pocztową w celu weryfikacji konta.',
+          'Registration completed successfully. Check your email inbox to verify your account.',
         nextSteps:
-          'Kliknij link weryfikacyjny w wysłanym mailu, aby aktywować swoje konto.',
+          'Click the verification link in the sent email to activate your account.',
       };
     } catch (error) {
       this.logger.error('Error during user registration', error, {
@@ -209,7 +209,7 @@ export class AuthService {
 
       response.cookie(cookie.name, cookie.value, cookie.attributes as any);
       return {
-        message: 'Zalogowano pomyślnie',
+        message: 'Login successful',
         emailVerified: user.emailVerified,
       };
     } catch (error) {
@@ -254,7 +254,7 @@ export class AuthService {
         userId: user.id,
       });
       return {
-        message: 'Konto zostało już zweryfikowane',
+        message: 'Account is already verified',
       };
     }
 
@@ -270,7 +270,7 @@ export class AuthService {
         userId: user.id,
         codeLength: code?.length,
       });
-      throw new BadRequestException('Kod weryfikacji jest nieprawidłowy');
+      throw new BadRequestException('Verification code is invalid');
     }
 
     if (
@@ -282,9 +282,7 @@ export class AuthService {
         verificationCodeId: verificationCode.id,
         expiresAt: verificationCode.expiresAt,
       });
-      throw new BadRequestException(
-        'Kod weryfikacji wygasł lub jest nieprawidłowy',
-      );
+      throw new BadRequestException('Verification code is expired or invalid');
     }
 
     const updatedUser = await this.usersRepository.update(user.id, {
@@ -297,7 +295,7 @@ export class AuthService {
         userId: user.id,
       });
       throw new InternalServerErrorException(
-        'Wystąpił błąd podczas weryfikacji adresu email',
+        'An error occurred during email verification',
       );
     }
 
@@ -307,7 +305,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Konto zostało zweryfikowane',
+      message: 'Account has been verified',
     };
   }
 
@@ -444,7 +442,7 @@ export class AuthService {
         resetTokenId: resetToken?.id,
         expiresAt: resetToken?.expiresAt,
       });
-      throw new BadRequestException('Token jest nieprawidłowy lub wygasł');
+      throw new BadRequestException('Token is invalid or expired');
     }
 
     const hashedPassword =
@@ -463,7 +461,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Hasło zostało zresetowane pomyślnie',
+      message: 'Password has been reset successfully',
     };
   }
 

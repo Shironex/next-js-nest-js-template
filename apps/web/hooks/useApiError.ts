@@ -10,7 +10,7 @@ export function useApiError() {
       if (apiError?.errors) {
         // Multiple validation errors
         apiError.errors.forEach((err) => {
-          const title = err.field !== 'unknown' ? err.field : 'Nieznane pole'
+          const title = err.field !== 'unknown' ? err.field : 'Unknown field'
           toast.error(title, {
             description: err.message,
           })
@@ -20,7 +20,7 @@ export function useApiError() {
         toast.error(apiError.message)
       } else {
         // Fallback error
-        toast.error('Wystąpił nieoczekiwany błąd')
+        toast.error('An unexpected error occurred')
       }
     } else {
       // Non-Axios error
