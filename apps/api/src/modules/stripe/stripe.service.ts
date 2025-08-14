@@ -182,7 +182,7 @@ export class StripeService {
     returnUrl: string,
   ): Promise<Stripe.BillingPortal.Session> {
     try {
-      this.logger.log(
+      this.logger.info(
         `[DEBUG] Starting createPortalSession for userId: ${userId}, returnUrl: ${returnUrl}`,
       );
 
@@ -190,7 +190,7 @@ export class StripeService {
         where: { userId },
       });
 
-      this.logger.log(
+      this.logger.info(
         `[DEBUG] Found subscription: exists=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}, status=${subscription?.status}`,
       );
 
@@ -206,7 +206,7 @@ export class StripeService {
         throw new Error('No Stripe customer ID found for subscription');
       }
 
-      this.logger.log(
+      this.logger.info(
         `[DEBUG] Creating portal session for customer ${subscription.stripeCustomerId}`,
       );
 
@@ -215,7 +215,7 @@ export class StripeService {
         return_url: returnUrl,
       };
 
-      this.logger.log(
+      this.logger.info(
         `[DEBUG] Portal session data:`,
         JSON.stringify(portalSessionData),
       );
