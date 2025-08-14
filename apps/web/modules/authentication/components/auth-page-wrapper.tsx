@@ -37,6 +37,7 @@ const AuthPageWrapper = ({
     if (requiresAuth && isUserAuth) {
       if (!user.isActive) {
         toast.error('Konto jest nieaktywne')
+        router.push(APP_ROUTES.LOGIN)
         return
       }
 
