@@ -1,22 +1,16 @@
 'use client'
-import { APP_ROUTES } from '@/lib/constants'
 import VerifyEmailForm from '@/modules/authentication/components/verify-email'
+import AuthPageWrapper from '@/modules/authentication/components/auth-page-wrapper'
 import { useCurrentUser } from '@/modules/authentication/hooks/use-current-user'
-import { useRouter } from 'next/navigation'
 
 const VerifyEmailPage = () => {
-  const { isUserAuth, user } = useCurrentUser()
-  const router = useRouter()
+  const { user } = useCurrentUser()
 
-  if (!isUserAuth) {
-    return router.push(APP_ROUTES.LOGIN)
-  }
-
-  if (user.emailVerified) {
-    return router.push(APP_ROUTES.HOME)
-  }
-
-  return <VerifyEmailForm email={user.email} />
+  return (
+    <AuthPageWrapper requiresAuth={true} allowUnverified={true}>
+      {user && <VerifyEmailForm email={user.email} />}
+    </AuthPageWrapper>
+  )
 }
 
 export default VerifyEmailPage
