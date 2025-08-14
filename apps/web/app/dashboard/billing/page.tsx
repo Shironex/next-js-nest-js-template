@@ -18,8 +18,9 @@ import { Badge } from '@workspace/ui/components/badge'
 import { Loader2, CreditCard, Calendar, AlertCircle } from 'lucide-react'
 import { formatPrice } from '@/lib/stripe'
 import { Alert, AlertDescription, AlertTitle } from '@workspace/ui/components/alert'
+import AuthPageWrapper from '@/modules/authentication/components/auth-page-wrapper'
 
-export default function BillingPage() {
+function BillingPageContent() {
   const { data: subscription, isLoading } = useSubscriptionStatus()
   const createPortalSession = useCreatePortalSession()
   const cancelSubscription = useCancelSubscription()
@@ -173,5 +174,13 @@ export default function BillingPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function BillingPage() {
+  return (
+    <AuthPageWrapper requiresAuth={true} loadingType="dashboard">
+      <BillingPageContent />
+    </AuthPageWrapper>
   )
 }

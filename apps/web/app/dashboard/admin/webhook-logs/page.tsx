@@ -32,6 +32,7 @@ import {
 import { ScrollArea } from '@workspace/ui/components/scroll-area'
 import { useCurrentUser } from '@/modules/authentication/hooks/use-current-user'
 import { useRouter } from 'next/navigation'
+import AuthPageWrapper from '@/modules/authentication/components/auth-page-wrapper'
 
 interface WebhookLog {
   id: string
@@ -48,7 +49,7 @@ interface WebhookLog {
   responseBody: any
 }
 
-export default function WebhookLogsPage() {
+function WebhookLogsPageContent() {
   const router = useRouter()
   const { user, isUserAuth, isLoading: isUserLoading } = useCurrentUser()
   const [selectedLog, setSelectedLog] = useState<WebhookLog | null>(null)
@@ -278,5 +279,13 @@ export default function WebhookLogsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function WebhookLogsPage() {
+  return (
+    <AuthPageWrapper requiresAuth={true} loadingType="dashboard">
+      <WebhookLogsPageContent />
+    </AuthPageWrapper>
   )
 }

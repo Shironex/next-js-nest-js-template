@@ -14,8 +14,9 @@ import { Loader2, TrendingUp, Users, DollarSign, Activity, Lock } from 'lucide-r
 import { Button } from '@workspace/ui/components/button'
 import { Alert, AlertDescription, AlertTitle } from '@workspace/ui/components/alert'
 import { Progress } from '@workspace/ui/components/progress'
+import AuthPageWrapper from '@/modules/authentication/components/auth-page-wrapper'
 
-export default function PremiumAnalyticsPage() {
+function PremiumAnalyticsPageContent() {
   const router = useRouter()
   const { data: subscription, isLoading } = useSubscriptionStatus()
 
@@ -201,5 +202,13 @@ export default function PremiumAnalyticsPage() {
         <Button>Generate Report</Button>
       </div>
     </div>
+  )
+}
+
+export default function PremiumAnalyticsPage() {
+  return (
+    <AuthPageWrapper requiresAuth={true} loadingType="dashboard">
+      <PremiumAnalyticsPageContent />
+    </AuthPageWrapper>
   )
 }
