@@ -36,7 +36,7 @@ export default function Pricing() {
 
     // If user already has an active subscription, redirect to dashboard
     if (subscriptionStatus?.isPremium) {
-      router.push('/dashboard/settings')
+      router.push('/dashboard/billing')
       return
     }
 
