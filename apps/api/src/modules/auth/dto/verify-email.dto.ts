@@ -10,7 +10,7 @@ export class VerifyEmailDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Length(8, 8, { message: 'Kod musi mieć dokładnie 8 cyfr' })
+  @Length(8, 8, { message: 'Code must be exactly 8 digits' })
   code: string;
 
   @ApiProperty({

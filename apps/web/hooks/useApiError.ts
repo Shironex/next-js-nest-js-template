@@ -24,7 +24,7 @@ export function useApiError() {
       }
     } else {
       // Non-Axios error
-      toast.error('Wystąpił nieoczekiwany błąd')
+      toast.error('An unexpected error occurred')
     }
   }
 

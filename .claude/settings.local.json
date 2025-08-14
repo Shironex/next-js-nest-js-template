@@ -31,7 +31,8 @@
       "Bash(pnpm --filter=web lint)",
       "Bash(pnpm --filter=web format)",
       "Bash(pnpm --filter=@workspace/ui typecheck)",
-      "Bash(pnpm --filter=@workspace/ui lint)"
+      "Bash(pnpm --filter=@workspace/ui lint)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

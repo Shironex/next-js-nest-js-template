@@ -103,13 +103,13 @@ const ResetPasswordForm = () => {
             <div className="space-y-3">
               <Link href={APP_ROUTES.FORGOT_PASSWORD}>
                 <Button className="w-full bg-amber-600 text-white hover:bg-amber-700">
-                  Poproś o nowy link
+                  Request new link
                 </Button>
               </Link>
 
               <Link href={APP_ROUTES.LOGIN}>
                 <Button variant="ghost" className="w-full">
-                  Powrót do logowania
+                  Back to login
                 </Button>
               </Link>
             </div>
@@ -149,13 +149,13 @@ const ResetPasswordForm = () => {
             <h3 className="mb-4 text-lg font-semibold text-gray-900">
               Password has been successfully updated!
             </h3>
-            <p className="mb-6 text-gray-600">Możesz teraz zalogować się używając nowego hasła.</p>
+            <p className="mb-6 text-gray-600">You can now log in using your new password.</p>
 
             <Button
               onClick={handleGoToLogin}
               className="w-full bg-amber-600 text-white hover:bg-amber-700"
             >
-              Zaloguj się teraz
+              Log in now
             </Button>
           </motion.div>
         </motion.div>
@@ -254,7 +254,7 @@ const ResetPasswordForm = () => {
               {resetPassword.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Aktualizowanie hasła...
+                  Updating password...
                 </>
               ) : (
                 'Update password'
@@ -267,7 +267,7 @@ const ResetPasswordForm = () => {
                 href={APP_ROUTES.LOGIN}
                 className="text-sm font-medium text-amber-600 transition-colors hover:text-amber-700"
               >
-                Zaloguj się
+                Log in
               </Link>
             </div>
           </motion.div>

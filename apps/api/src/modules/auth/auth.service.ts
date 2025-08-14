@@ -54,7 +54,7 @@ export class AuthService {
           email: data.email,
           existingUserId: existingUser.id,
         });
-        throw new BadRequestException('Ten adres email jest już zajęty');
+        throw new BadRequestException('This email address is already taken');
       }
 
       const isUsernameTaken = await this.usersRepository.findByUsername(
@@ -67,7 +67,7 @@ export class AuthService {
           username: data.username,
           existingUserId: isUsernameTaken.id,
         });
-        throw new BadRequestException('Nazwa użytkownika jest już zajęta');
+        throw new BadRequestException('This username is already taken');
       }
 
       const hashedPassword = await this.passwordHashingService.hashPassword(
@@ -140,7 +140,7 @@ export class AuthService {
 
       if (!user) {
         this.logger.warn('Login failed - user not found', { email });
-        throw new UnauthorizedException('Nieprawidłowe dane logowania');
+        throw new UnauthorizedException('Invalid login credentials');
       }
 
       //TODO: Implement this after production launch no needed for now
@@ -193,7 +193,7 @@ export class AuthService {
         //   });
         // }
 
-        throw new UnauthorizedException('Nieprawidłowe dane logowania');
+        throw new UnauthorizedException('Invalid login credentials');
       }
 
       // Reset failed attempts on successful login
@@ -244,7 +244,7 @@ export class AuthService {
     if (!user) {
       this.logger.warn('Email verification failed - user not found', { email });
       throw new BadRequestException(
-        'Nie znaleziono użytkownika o podanym adresie email',
+        'User not found with the provided email address',
       );
     }
 
@@ -372,7 +372,7 @@ export class AuthService {
       this.logger.warn('Forgot password - user not found', {
         email,
       });
-      return { message: 'Użytkownik nie został znaleziony' };
+      return { message: 'User not found' };
     }
 
     if (!user.emailVerified) {
@@ -380,7 +380,7 @@ export class AuthService {
         email,
         userId: user.id,
       });
-      throw new BadRequestException('Adres email nie został zweryfikowany');
+      throw new BadRequestException('Email address has not been verified');
     }
 
     // Check if there's already a recent token
@@ -397,7 +397,7 @@ export class AuthService {
         existingTokenId: existingToken.id,
       });
       throw new BadRequestException(
-        'Link do resetowania hasła został już wysłany',
+        'Password reset link has already been sent',
       );
     }
 
@@ -419,7 +419,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Link do resetowania hasła został wysłany',
+      message: 'Password reset link has been sent',
     };
   }
 

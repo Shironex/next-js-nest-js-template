@@ -250,7 +250,7 @@ describe('AuthService', () => {
         BadRequestException,
       );
       await expect(service.register(mockRegisterDto)).rejects.toThrow(
-        'Ten adres email jest już zajęty',
+        'This email address is already taken',
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -286,7 +286,7 @@ describe('AuthService', () => {
         BadRequestException,
       );
       await expect(service.register(mockRegisterDto)).rejects.toThrow(
-        'Nazwa użytkownika jest już zajęta',
+        'This username is already taken',
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -384,7 +384,7 @@ describe('AuthService', () => {
       userRepository.findByEmail.mockResolvedValue(null);
 
       await expect(service.verifyEmail(mockEmail, mockCode)).rejects.toThrow(
-        'Nie znaleziono użytkownika o podanym adresie email',
+        'User not found with the provided email address',
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -713,7 +713,7 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         service.login(mockLoginDto, mockRequest, mockResponse),
-      ).rejects.toThrow('Nieprawidłowe dane logowania');
+      ).rejects.toThrow('Invalid login credentials');
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Login failed - user not found',
@@ -730,7 +730,7 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
       await expect(
         service.login(mockLoginDto, mockRequest, mockResponse),
-      ).rejects.toThrow('Nieprawidłowe dane logowania');
+      ).rejects.toThrow('Invalid login credentials');
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Login failed - invalid password',
@@ -829,7 +829,7 @@ describe('AuthService', () => {
         mockUser.username,
       );
       expect(result).toEqual({
-        message: 'Link do resetowania hasła został wysłany',
+        message: 'Password reset link has been sent',
       });
       expect(mockLogger.info).toHaveBeenCalledWith('Password reset link sent', {
         email,
@@ -849,7 +849,7 @@ describe('AuthService', () => {
       expect(passwordResetService.createResetToken).not.toHaveBeenCalled();
       expect(mailService.sendResetPasswordLink).not.toHaveBeenCalled();
       expect(result).toEqual({
-        message: 'Użytkownik nie został znaleziony',
+        message: 'User not found',
       });
       expect(mockLogger.warn).toHaveBeenCalledWith(
         'Forgot password - user not found',
@@ -941,7 +941,7 @@ describe('AuthService', () => {
         mockUser,
       );
       expect(result).toEqual({
-        message: 'Link do resetowania hasła został wysłany',
+        message: 'Password reset link has been sent',
       });
     });
   });

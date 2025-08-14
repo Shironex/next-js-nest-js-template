@@ -305,7 +305,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Link do resetowania hasła został wysłany',
+        message: 'Password reset link has been sent',
       };
 
       authService.forgotPassword.mockResolvedValue(expectedResponse);
@@ -342,7 +342,7 @@ describe('AuthController', () => {
       };
 
       const expectedResponse = {
-        message: 'Użytkownik nie został znaleziony',
+        message: 'User not found',
       };
 
       authService.forgotPassword.mockResolvedValue(expectedResponse);
@@ -361,7 +361,7 @@ describe('AuthController', () => {
         turnstileToken: 'mock-turnstile-token',
       };
 
-      const error = new Error('Adres email nie został zweryfikowany');
+      const error = new Error('Email address has not been verified');
       authService.forgotPassword.mockRejectedValue(error);
 
       await expect(
