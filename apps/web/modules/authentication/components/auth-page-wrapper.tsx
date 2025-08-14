@@ -48,13 +48,14 @@ const AuthPageWrapper = ({
     }
 
     if (!requiresAuth && isUserAuth) {
-      if (user.emailVerified && user.isActive) {
-        router.push(redirectIfAuth)
+      // Allow inactive users to stay on auth pages (they can log out)
+      if (!user.isActive) {
+        // Don't redirect inactive users away from auth pages
         return
       }
 
-      if (!user.isActive) {
-        toast.error('Konto jest nieaktywne')
+      if (user.emailVerified && user.isActive) {
+        router.push(redirectIfAuth)
         return
       }
 
@@ -87,11 +88,13 @@ const AuthPageWrapper = ({
   }
 
   if (!requiresAuth && isUserAuth) {
-    if (user.emailVerified && user.isActive) {
-      return <LoadingComponent />
+    // Allow inactive users to access auth pages without loading screen
+    if (!user.isActive) {
+      // Don't show loading for inactive users on auth pages
+      return <>{children}</>
     }
 
-    if (!user.isActive) {
+    if (user.emailVerified && user.isActive) {
       return <LoadingComponent />
     }
 
