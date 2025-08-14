@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master, dev]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   # Detect which parts of the codebase have changed
   changes:
@@ -26,6 +30,7 @@ jobs:
         uses: dorny/paths-filter@v3
         id: changes
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           filters: |
             api:
               - 'apps/api/**'
