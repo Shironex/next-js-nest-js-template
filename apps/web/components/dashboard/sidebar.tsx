@@ -144,7 +144,6 @@ export function DashboardSidebar({
 
   // Filter navigation items based on user role and subscription
   const filteredMainNavItems = mainNavItems.filter((item) => {
-    if (item.isPremium && !subscription?.isPremium) return false
     if (item.isAdmin && user?.role !== 'ADMIN') return false
     return true
   })
