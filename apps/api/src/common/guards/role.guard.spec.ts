@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AdminRoleGuard } from './role.guard';
 import { SessionCookieService } from '../../modules/auth/services/session/sessionCookie.service';
 import { SessionValidatorService } from '../../modules/auth/services/session/sessionValidator.service';
@@ -16,6 +17,7 @@ describe('AdminRoleGuard', () => {
   let guard: AdminRoleGuard;
   let sessionCookieService: DeepMockProxy<SessionCookieService>;
   let sessionValidatorService: DeepMockProxy<SessionValidatorService>;
+  let reflector: DeepMockProxy<Reflector>;
   let mockExecutionContext: DeepMockProxy<ExecutionContext>;
   let mockRequest: Partial<AuthRequest>;
 
@@ -55,12 +57,17 @@ describe('AdminRoleGuard', () => {
           provide: SessionValidatorService,
           useValue: mockDeep<SessionValidatorService>(),
         },
+        {
+          provide: Reflector,
+          useValue: mockDeep<Reflector>(),
+        },
       ],
     }).compile();
 
     guard = module.get<AdminRoleGuard>(AdminRoleGuard);
     sessionCookieService = module.get(SessionCookieService);
     sessionValidatorService = module.get(SessionValidatorService);
+    reflector = module.get(Reflector);
 
     // Setup mocks
     mockExecutionContext = mockDeep<ExecutionContext>();
@@ -75,6 +82,9 @@ describe('AdminRoleGuard', () => {
       getResponse: jest.fn(),
       getNext: jest.fn(),
     } as any);
+
+    // Mock reflector to return false (not public) by default
+    reflector.getAllAndOverride.mockReturnValue(false);
   });
 
   it('should be defined', () => {
