@@ -47,6 +47,9 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
     },
   })
 
+  const watchedCode = form.watch('code')
+  const watchedTurnstileToken = form.watch('turnstileToken')
+
   const resendForm = useForm<ResendVerificationFormData>({
     resolver: zodResolver(resendVerificationSchema),
     defaultValues: {
@@ -238,11 +241,7 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
             {/* Verify Button */}
             <Button
               type="submit"
-              disabled={
-                form.getValues('code').length !== 8 ||
-                !form.getValues('turnstileToken') ||
-                verifyEmail.isPending
-              }
+              disabled={watchedCode.length !== 8 || !watchedTurnstileToken || verifyEmail.isPending}
               className="w-full"
             >
               {verifyEmail.isPending ? (
@@ -266,7 +265,7 @@ const VerifyEmailForm = ({ email }: { email: string }) => {
                 type="button"
                 variant="outline"
                 onClick={handleResendCode}
-                disabled={resendVerification.isPending || !resendForm.getValues('turnstileToken')}
+                disabled={resendVerification.isPending || !watchedTurnstileToken}
                 className="w-full"
               >
                 {resendVerification.isPending ? (
