@@ -1,64 +1,136 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Check } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@workspace/ui/components/button'
-
-const pricingPlans = [
-  {
-    name: 'Starter',
-    price: '$9',
-    period: 'per month',
-    description: 'Perfect for small teams getting started',
-    features: [
-      'Up to 5 team members',
-      '10GB storage',
-      'Basic analytics',
-      'Email support',
-      'Mobile app access',
-    ],
-    cta: 'Start Free Trial',
-    popular: false,
-  },
-  {
-    name: 'Professional',
-    price: '$29',
-    period: 'per month',
-    description: 'Ideal for growing businesses',
-    features: [
-      'Up to 25 team members',
-      '100GB storage',
-      'Advanced analytics',
-      'Priority support',
-      'Mobile app access',
-      'Custom integrations',
-      'Advanced security',
-    ],
-    cta: 'Start Free Trial',
-    popular: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: 'pricing',
-    description: 'For large organizations',
-    features: [
-      'Unlimited team members',
-      'Unlimited storage',
-      'Custom analytics',
-      '24/7 phone support',
-      'Mobile app access',
-      'Custom integrations',
-      'Advanced security',
-      'Dedicated account manager',
-    ],
-    cta: 'Contact Sales',
-    popular: false,
-  },
-]
+import {
+  useCreateCheckoutSession,
+  useSubscriptionStatus,
+  usePricingPlans,
+} from '../../hooks/use-subscription'
+import { useCurrentUser } from '../../modules/authentication/hooks/use-current-user'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function Pricing() {
+  const router = useRouter()
+  const { user, isUserAuth, isLoading: isUserLoading } = useCurrentUser()
+  const { data: subscriptionStatus, isLoading: isSubscriptionLoading } = useSubscriptionStatus()
+  const { data: pricingPlans, isLoading: isPricingLoading, error: pricingError } = usePricingPlans()
+  const createCheckoutSession = useCreateCheckoutSession()
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+
+  const handlePlanSelection = async (plan: NonNullable<typeof pricingPlans>[0]) => {
+    // Enterprise plan - redirect to contact form
+    if (plan.id === 'enterprise') {
+      router.push('#contact')
+      return
+    }
+
+    // If user is not logged in, redirect to register
+    if (!isUserAuth) {
+      router.push('/auth/register')
+      return
+    }
+
+    // If user already has an active subscription, redirect to dashboard
+    if (subscriptionStatus?.isPremium) {
+      router.push('/dashboard/billing')
+      return
+    }
+
+    // Create Stripe checkout session
+    if (plan.stripePriceId) {
+      setLoadingPlan(plan.id)
+      try {
+        await createCheckoutSession.mutateAsync({
+          priceId: plan.stripePriceId,
+          successUrl: `${window.location.origin}/dashboard?subscription=success`,
+          cancelUrl: `${window.location.origin}/pricing?subscription=cancelled`,
+        })
+      } catch (error) {
+        console.error('Failed to create checkout session:', error)
+      } finally {
+        setLoadingPlan(null)
+      }
+    }
+  }
+
+  const getButtonText = (plan: NonNullable<typeof pricingPlans>[0]) => {
+    if (loadingPlan === plan.id) {
+      return <Loader2 className="h-4 w-4 animate-spin" />
+    }
+
+    if (plan.id === 'enterprise') {
+      return plan.cta
+    }
+
+    if (!isUserAuth) {
+      return plan.cta
+    }
+
+    if (subscriptionStatus?.isPremium) {
+      return 'Manage Subscription'
+    }
+
+    return 'Subscribe Now'
+  }
+
+  // Show loading state
+  if (isPricingLoading) {
+    return (
+      <section id="pricing" className="bg-muted/50 py-20">
+        <div className="container px-4 md:px-6">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-muted-foreground mx-auto mt-4 max-w-[700px] text-xl">
+              Choose the perfect plan for your team. Start free, upgrade anytime.
+            </p>
+          </div>
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-background rounded-2xl border p-8 shadow-sm">
+                <div className="animate-pulse">
+                  <div className="mb-2 h-6 rounded bg-gray-200"></div>
+                  <div className="mb-4 h-8 rounded bg-gray-200"></div>
+                  <div className="mb-6 h-4 rounded bg-gray-200"></div>
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j} className="mb-2 h-4 rounded bg-gray-200"></div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Show error state
+  if (pricingError) {
+    console.log(pricingError)
+    return (
+      <section id="pricing" className="bg-muted/50 py-20">
+        <div className="container px-4 md:px-6">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="mx-auto mt-4 max-w-[700px] text-xl text-red-600">
+              Failed to load pricing plans. Please try again later.
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Show pricing plans
+  if (!pricingPlans) return null
+
   return (
     <section id="pricing" className="bg-muted/50 py-20">
       <div className="container px-4 md:px-6">
@@ -125,13 +197,12 @@ export default function Pricing() {
               </ul>
 
               <Button
-                asChild
                 className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
                 variant={plan.popular ? 'default' : 'outline'}
+                onClick={() => handlePlanSelection(plan)}
+                disabled={loadingPlan !== null || isUserLoading || isSubscriptionLoading}
               >
-                <Link href={plan.name === 'Enterprise' ? '#contact' : '/auth/register'}>
-                  {plan.cta}
-                </Link>
+                {getButtonText(plan)}
               </Button>
             </motion.div>
           ))}

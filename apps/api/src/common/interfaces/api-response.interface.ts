@@ -42,3 +42,12 @@ export enum ApiResponseMessage {
   INTERNAL_ERROR = 'Internal server error',
   BAD_REQUEST = 'Bad request',
 }
+
+// Type alias for compatibility
+export interface ApiResponseDto<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  meta?: any;
+  timestamp: string;
+}

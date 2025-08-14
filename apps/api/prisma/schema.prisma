@@ -33,6 +33,7 @@ model User {
   EmailVerificationCode EmailVerificationCode[]
   PasswordResetToken    PasswordResetToken[]
   Session               Session[]
+  Subscription          Subscription?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -70,9 +71,151 @@ model PasswordResetToken {
   expiresAt DateTime
 }
 
+// ========== SUBSCRIPTION MODELS ==========
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stripe fields
+  stripeCustomerId     String    @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  stripeProductId      String?
+  
+  // Subscription details
+  status               SubscriptionStatus @default(FREE)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  canceledAt           DateTime?
+  trialEnd             DateTime?
+  
+  // Payment details
+  lastPaymentAmount    Int?      // Amount in cents
+  lastPaymentDate      DateTime?
+  nextPaymentDate      DateTime?
+  
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+model StripeWebhookLog {
+  id                String    @id @default(cuid())
+  
+  // Webhook details
+  stripeEventId     String    @unique
+  eventType         String
+  webhookEndpoint   String?
+  apiVersion        String?
+  
+  // Processing details
+  status            WebhookStatus @default(PENDING)
+  attempts          Int       @default(1)
+  processingTimeMs  Int?
+  
+  // Request/Response data
+  requestBody       Json
+  responseStatus    Int?
+  responseBody      Json?
+  errorMessage      String?
+  errorStack        String?   @db.Text
+  
+  // Related entities
+  userId            String?
+  subscriptionId    String?
+  customerId        String?
+  
+  // Metadata
+  ipAddress         String?
+  userAgent         String?
+  signature         String?
+  
+  createdAt         DateTime  @default(now())
+  processedAt       DateTime?
+  
+  @@index([stripeEventId])
+  @@index([eventType])
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Product {
+  id                String    @id @default(cuid())
+  
+  // Stripe fields
+  stripeProductId   String    @unique
+  stripePriceId     String    @unique
+  
+  // Product details
+  name              String
+  description       String?
+  features          String[]  // Array of feature descriptions
+  
+  // Pricing
+  price             Int       // Amount in cents
+  currency          String    @default("usd")
+  interval          BillingInterval @default(MONTHLY)
+  intervalCount     Int       @default(1)
+  
+  // Limits and features
+  maxProjects       Int?
+  maxUsersPerProject Int?
+  maxStorage        Int?      // In MB
+  hasAnalytics      Boolean   @default(false)
+  hasPrioritySupport Boolean  @default(false)
+  hasCustomDomain   Boolean   @default(false)
+  hasApiAccess      Boolean   @default(false)
+  
+  // Display
+  displayOrder      Int       @default(0)
+  isActive          Boolean   @default(true)
+  isPopular         Boolean   @default(false)
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([stripeProductId])
+  @@index([stripePriceId])
+  @@index([isActive])
+}
+
 // ========== ENUMS ==========
 
 enum Role {
   USER
   ADMIN
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+  PAUSED
+}
+
+enum WebhookStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  IGNORED
+  RETRY
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+  LIFETIME
 }

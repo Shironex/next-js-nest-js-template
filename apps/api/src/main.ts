@@ -14,6 +14,7 @@ import { ResponseFormatInterceptor } from './common/interceptors/response-format
 async function bootstrap() {
   const app = await NestFactory.create<INestApplication>(AppModule, {
     bufferLogs: true,
+    rawBody: true,
   });
 
   // Replace the default logger with our custom logger

@@ -197,7 +197,7 @@ describe('setupSwagger', () => {
 
     expect(mockPathJoin).toHaveBeenCalledWith(
       expect.anything(),
-      '../../../package.json',
+      '../../package.json',
     );
     expect(mockReadFileSync).toHaveBeenCalledWith(
       '/mocked/path/package.json',

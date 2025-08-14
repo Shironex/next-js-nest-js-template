@@ -12,6 +12,9 @@ import { RateLimitModule } from './modules/rate-limit/rate-limit.module';
 import { validationSchema } from './config/configuration.config';
 import { SessionModule } from './modules/auth/services/session/session.module';
 import { S3Module } from './modules/s3/s3.module';
+import { StripeModule } from './modules/stripe/stripe.module';
+import { AdminModule } from './modules/admin/admin.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +30,8 @@ import { S3Module } from './modules/s3/s3.module';
     AuthModule,
     SessionModule,
     S3Module,
+    StripeModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

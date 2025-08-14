@@ -1330,15 +1330,11 @@ describe('AuthService', () => {
       });
 
       userRepository.findByEmail.mockResolvedValue(mockUser);
-      verificationCodeService.createEmailVerificationCode.mockResolvedValue(
-        mockCode,
-      );
-      mailService.sendVerificationCode.mockResolvedValue(undefined);
 
-      // Mock logger.info to throw an error to simulate unexpected issues
-      mockLogger.info.mockImplementationOnce(() => {
-        throw new Error('Unexpected error');
-      });
+      // Mock verificationCodeService to throw an error to simulate unexpected issues within try-catch
+      verificationCodeService.createEmailVerificationCode.mockRejectedValue(
+        new Error('Unexpected error'),
+      );
 
       await expect(service.resendVerification(mockEmail)).rejects.toThrow(
         InternalServerErrorException,

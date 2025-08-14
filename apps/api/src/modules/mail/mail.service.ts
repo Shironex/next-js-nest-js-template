@@ -5,6 +5,8 @@ import * as nodemailer from 'nodemailer';
 import ResetPasswordLinkEmail from './templates/reset-password-link';
 import VerificationCodeEmail from './templates/email-verification';
 import AccountLockedEmail from './templates/account-locked';
+import SubscriptionCanceledEmail from './templates/subscription-canceled';
+import PaymentFailedEmail from './templates/payment-failed';
 import { APP_TITLE } from 'src/common/constants';
 
 export type MessageInfo = {
@@ -74,6 +76,31 @@ export class MailService {
     await this.sendMail({
       to: email,
       subject: `${APP_TITLE} - Account Temporarily Locked`,
+      html,
+    });
+  }
+
+  async sendSubscriptionCanceledEmail(email: string, username: string) {
+    const html = await render(SubscriptionCanceledEmail({ username }));
+
+    await this.sendMail({
+      to: email,
+      subject: `${APP_TITLE} - Subscription Canceled`,
+      html,
+    });
+  }
+
+  async sendPaymentFailedEmail(email: string, username: string) {
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    const updatePaymentUrl = `${frontendUrl}/account/billing`;
+
+    const html = await render(
+      PaymentFailedEmail({ username, updatePaymentUrl }),
+    );
+
+    await this.sendMail({
+      to: email,
+      subject: `${APP_TITLE} - Action Required: Payment Failed`,
       html,
     });
   }

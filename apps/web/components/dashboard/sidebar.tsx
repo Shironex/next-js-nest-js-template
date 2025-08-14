@@ -17,6 +17,9 @@ import {
   TooltipTrigger,
 } from '@workspace/ui/components/tooltip'
 import { useLogout } from '@/modules/authentication/hooks/use-logout'
+import { useCurrentUser } from '@/modules/authentication/hooks/use-current-user'
+import { useSubscriptionStatus } from '@/hooks/use-subscription'
+import { Badge } from '@workspace/ui/components/badge'
 import {
   ChevronLeft,
   ChevronRight,
@@ -29,6 +32,9 @@ import {
   HelpCircle,
   LogOut,
   Home,
+  CreditCard,
+  TrendingUp,
+  Shield,
 } from 'lucide-react'
 
 interface NavItem {
@@ -36,6 +42,8 @@ interface NavItem {
   href: string
   icon: React.ReactNode
   isActive?: (pathname: string) => boolean
+  isPremium?: boolean
+  isAdmin?: boolean
 }
 
 const mainNavItems: NavItem[] = [
@@ -50,6 +58,13 @@ const mainNavItems: NavItem[] = [
     href: '/dashboard/analytics',
     icon: <BarChart3 className="h-5 w-5" />,
     isActive: (pathname) => pathname.startsWith('/dashboard/analytics'),
+  },
+  {
+    title: 'Premium Analytics',
+    href: '/dashboard/premium-analytics',
+    icon: <TrendingUp className="h-5 w-5" />,
+    isActive: (pathname) => pathname.startsWith('/dashboard/premium-analytics'),
+    isPremium: true,
   },
   {
     title: 'Team',
@@ -79,10 +94,23 @@ const bottomNavItems: NavItem[] = [
     isActive: (pathname) => pathname === '/',
   },
   {
+    title: 'Billing',
+    href: '/dashboard/billing',
+    icon: <CreditCard className="h-5 w-5" />,
+    isActive: (pathname) => pathname.startsWith('/dashboard/billing'),
+  },
+  {
     title: 'Settings',
     href: '/dashboard/settings',
     icon: <Settings className="h-5 w-5" />,
     isActive: (pathname) => pathname.startsWith('/dashboard/settings'),
+  },
+  {
+    title: 'Admin',
+    href: '/dashboard/admin/webhook-logs',
+    icon: <Shield className="h-5 w-5" />,
+    isActive: (pathname) => pathname.startsWith('/dashboard/admin'),
+    isAdmin: true,
   },
   {
     title: 'Help',
@@ -109,8 +137,21 @@ export function DashboardSidebar({
 }: DashboardSidebarProps) {
   const pathname = usePathname()
   const logout = useLogout({ autoRedirect: true })
+  const { user, isUserAuth } = useCurrentUser()
+  const { data: subscription } = useSubscriptionStatus()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+
+  // Filter navigation items based on user role and subscription
+  const filteredMainNavItems = mainNavItems.filter((item) => {
+    if (item.isAdmin && user?.role !== 'ADMIN') return false
+    return true
+  })
+
+  const filteredBottomNavItems = bottomNavItems.filter((item) => {
+    if (item.isAdmin && user?.role !== 'ADMIN') return false
+    return true
+  })
 
   // Initialize collapsed state based on screen size and props
   useEffect(() => {
@@ -153,7 +194,7 @@ export function DashboardSidebar({
             <ScrollArea className="flex-1">
               <div className="py-4">
                 <nav className="grid gap-1 px-2">
-                  {mainNavItems.map((item, index) => (
+                  {filteredMainNavItems.map((item, index) => (
                     <MobileNavItem
                       key={item.href}
                       item={item}
@@ -169,7 +210,7 @@ export function DashboardSidebar({
             {/* Bottom navigation */}
             <div className="border-t py-4">
               <nav className="grid gap-1 px-2">
-                {bottomNavItems.map((item, index) => (
+                {filteredBottomNavItems.map((item, index) => (
                   <MobileNavItem
                     key={item.href}
                     item={item}
@@ -251,7 +292,7 @@ export function DashboardSidebar({
         <ScrollArea className="flex-1">
           <div className="py-4">
             <nav className="grid gap-1 px-2">
-              {mainNavItems.map((item, index) => (
+              {filteredMainNavItems.map((item, index) => (
                 <NavItem
                   key={item.href}
                   item={item}
@@ -267,7 +308,7 @@ export function DashboardSidebar({
         {/* Bottom navigation */}
         <div className="border-t py-4">
           <nav className="grid gap-1 px-2">
-            {bottomNavItems.map((item, index) => (
+            {filteredBottomNavItems.map((item, index) => (
               <NavItem
                 key={item.href}
                 item={item}
@@ -371,8 +412,14 @@ function NavItem({
                 initial={false}
                 animate={isCollapsed ? 'collapsed' : 'expanded'}
                 transition={{ duration: 0.2 }}
+                className="flex items-center gap-2"
               >
                 {item.title}
+                {item.isPremium && (
+                  <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+                    PRO
+                  </Badge>
+                )}
               </motion.span>
               {isActive && (
                 <motion.div
@@ -421,8 +468,14 @@ function NavItem({
           initial={false}
           animate={isCollapsed ? 'collapsed' : 'expanded'}
           transition={{ duration: 0.2 }}
+          className="flex items-center gap-2"
         >
           {item.title}
+          {item.isPremium && (
+            <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+              PRO
+            </Badge>
+          )}
         </motion.span>
         {isActive && (
           <motion.div
@@ -473,7 +526,14 @@ function MobileNavItem({
         >
           {item.icon}
         </div>
-        <span>{item.title}</span>
+        <span className="flex items-center gap-2">
+          {item.title}
+          {item.isPremium && (
+            <Badge variant="secondary" className="h-4 px-1 text-[10px]">
+              PRO
+            </Badge>
+          )}
+        </span>
         {isActive && (
           <motion.div
             className="bg-primary absolute left-0 h-8 w-1 rounded-r-full"

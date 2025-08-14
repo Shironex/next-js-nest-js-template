@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
 import { SessionCookieService } from '../../modules/auth/services/session/sessionCookie.service';
 import { SessionValidatorService } from '../../modules/auth/services/session/sessionValidator.service';
@@ -12,6 +13,7 @@ describe('AuthGuard', () => {
   let guard: AuthGuard;
   let sessionCookieService: DeepMockProxy<SessionCookieService>;
   let sessionValidatorService: DeepMockProxy<SessionValidatorService>;
+  let reflector: DeepMockProxy<Reflector>;
   let mockExecutionContext: DeepMockProxy<ExecutionContext>;
   let mockRequest: Partial<AuthRequest>;
 
@@ -42,12 +44,17 @@ describe('AuthGuard', () => {
           provide: SessionValidatorService,
           useValue: mockDeep<SessionValidatorService>(),
         },
+        {
+          provide: Reflector,
+          useValue: mockDeep<Reflector>(),
+        },
       ],
     }).compile();
 
     guard = module.get<AuthGuard>(AuthGuard);
     sessionCookieService = module.get(SessionCookieService);
     sessionValidatorService = module.get(SessionValidatorService);
+    reflector = module.get(Reflector);
 
     // Setup mocks
     mockExecutionContext = mockDeep<ExecutionContext>();
@@ -62,6 +69,9 @@ describe('AuthGuard', () => {
       getResponse: jest.fn(),
       getNext: jest.fn(),
     } as any);
+
+    // Mock reflector to return false (not public) by default
+    reflector.getAllAndOverride.mockReturnValue(false);
   });
 
   it('should be defined', () => {
@@ -207,6 +217,17 @@ describe('AuthGuard', () => {
         UnauthorizedException,
       );
 
+      expect(sessionValidatorService.validate).not.toHaveBeenCalled();
+    });
+
+    it('should return true for public endpoints without authentication', async () => {
+      reflector.getAllAndOverride.mockReturnValue(true); // Public endpoint
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(true);
+      expect(reflector.getAllAndOverride).toHaveBeenCalled();
+      expect(sessionCookieService.getCookieName).not.toHaveBeenCalled();
       expect(sessionValidatorService.validate).not.toHaveBeenCalled();
     });
   });
