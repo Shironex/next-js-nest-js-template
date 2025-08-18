@@ -106,7 +106,7 @@ export const RegisterDocs = () =>
           summary: 'Business logic error (email exists)',
           value: {
             success: false,
-            message: 'Ten adres email jest już zajęty',
+            message: 'This email address is already taken',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/register',
@@ -255,7 +255,7 @@ export const LoginDocs = () =>
       type: ApiErrorResponseDto,
       example: {
         success: false,
-        message: 'Nieprawidłowe dane logowania',
+        message: 'Invalid login credentials',
         code: 401,
         timestamp: '2024-01-15T10:30:00.000Z',
         path: '/auth/login',
@@ -474,7 +474,7 @@ export const ForgotPasswordDocs = () =>
         message: 'Request completed successfully',
         code: 200,
         data: {
-          message: 'Link do resetowania hasła został wysłany',
+          message: 'Password reset link has been sent',
         },
       },
     }),
@@ -487,7 +487,7 @@ export const ForgotPasswordDocs = () =>
         message: 'Request completed successfully',
         code: 200,
         data: {
-          message: 'Użytkownik nie został znaleziony',
+          message: 'User not found',
         },
       },
     }),
@@ -499,7 +499,7 @@ export const ForgotPasswordDocs = () =>
           summary: 'Email address not verified',
           value: {
             success: false,
-            message: 'Adres email nie został zweryfikowany',
+            message: 'Email address has not been verified',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/forgot-password',
@@ -509,7 +509,7 @@ export const ForgotPasswordDocs = () =>
           summary: 'Reset token already sent recently',
           value: {
             success: false,
-            message: 'Link do resetowania hasła został już wysłany',
+            message: 'Password reset link has already been sent',
             code: 400,
             timestamp: '2024-01-15T10:30:00.000Z',
             path: '/auth/forgot-password',
