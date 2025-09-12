@@ -132,6 +132,7 @@
       "^chalk$": "<rootDir>/__mocks__/chalk.ts",
       "^winston$": "<rootDir>/__mocks__/winston.ts",
       "^winston-daily-rotate-file$": "<rootDir>/__mocks__/winston-daily-rotate-file.ts",
+      "^uuid$": "<rootDir>/__mocks__/uuid.ts",
       "^generated/prisma$": "<rootDir>/../generated/prisma",
       "^@oslojs/encoding$": "<rootDir>/__mocks__/@oslojs/encoding.ts",
       "^@oslojs/crypto/sha2$": "<rootDir>/__mocks__/@oslojs/crypto/sha2.ts",
@@ -147,7 +148,7 @@
       "^ioredis$": "<rootDir>/__mocks__/ioredis.ts"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(@oslojs|chalk).*)"
+      "node_modules/(?!(@oslojs|chalk|uuid).*)"
     ],
     "setupFilesAfterEnv": [
       "<rootDir>/test-setup.ts"
