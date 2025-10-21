@@ -1,0 +1,443 @@
+---
+title: Deployment
+description: Deploy your application to production with Docker
+---
+
+## Overview
+
+This guide covers deploying the application to production using Docker containers. The monorepo includes production-ready Dockerfiles for both the API and Web applications.
+
+## Prerequisites
+
+Before deploying, ensure you have:
+
+- Docker and Docker Compose installed
+- Production environment variables configured
+- PostgreSQL, Redis, and other required services set up
+- Domain names and SSL certificates (for HTTPS)
+
+## Docker Deployment
+
+### API Dockerfile
+
+The API Dockerfile uses a multi-stage build for optimal image size and security:
+
+**Location**: `apps/api/Dockerfile`
+
+**Build the API image:**
+```bash
+docker build -f apps/api/Dockerfile -t my-app-api:latest .
+```
+
+**Run the API container:**
+```bash
+docker run -d \
+  -p 3001:3001 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
+  -e REDIS_URL="redis://host:6379" \
+  -e NODE_ENV="production" \
+  --name my-app-api \
+  my-app-api:latest
+```
+
+### Web Dockerfile
+
+The Web Dockerfile creates an optimized Next.js standalone build:
+
+**Location**: `apps/web/Dockerfile`
+
+**Build the Web image:**
+```bash
+docker build -f apps/web/Dockerfile -t my-app-web:latest .
+```
+
+**Run the Web container:**
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e NEXT_PUBLIC_API_URL="https://api.example.com" \
+  -e NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_live_..." \
+  --name my-app-web \
+  my-app-web:latest
+```
+
+### Docker Compose Production
+
+Create a `docker-compose.prod.yml` for the complete stack:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: production
+      # Add other environment variables
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+```
+
+**Deploy the stack:**
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Environment Variables
+
+### API Production Variables
+
+Create a `.env.production` file for the API:
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@postgres:5432/production_db"
+
+# Redis
+REDIS_URL="redis://redis:6379"
+
+# Application
+NODE_ENV="production"
+PORT=3001
+
+# Security
+SESSION_SECRET="your-super-secret-session-key"
+
+# Email (Use production SMTP)
+MAIL_HOST="smtp.sendgrid.net"
+MAIL_PORT=587
+MAIL_USER="apikey"
+MAIL_PASSWORD="your-sendgrid-api-key"
+MAIL_FROM="noreply@yourdomain.com"
+
+# S3 (Production AWS)
+S3_ENDPOINT="https://s3.amazonaws.com"
+S3_BUCKET="your-production-bucket"
+S3_ACCESS_KEY_ID="your-aws-access-key"
+S3_SECRET_ACCESS_KEY="your-aws-secret-key"
+S3_REGION="us-east-1"
+
+# Stripe
+STRIPE_SECRET_KEY="sk_live_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_PUBLISHABLE_KEY="pk_live_..."
+
+# Turnstile
+TURNSTILE_SECRET_KEY="your-turnstile-secret"
+
+# Logging
+LOG_LEVEL="info"
+```
+
+### Web Production Variables
+
+Create a `.env.production` file for the Web app:
+
+```bash
+# API
+NEXT_PUBLIC_API_URL="https://api.yourdomain.com"
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_live_..."
+
+# Turnstile
+NEXT_PUBLIC_TURNSTILE_SITE_KEY="your-site-key"
+TURNSTILE_SECRET_KEY="your-secret-key"
+
+# Next.js
+NEXT_TELEMETRY_DISABLED=1
+NODE_ENV="production"
+```
+
+## Database Migrations
+
+Run database migrations before starting the API:
+
+```bash
+# Using Docker
+docker run --rm \
+  -e DATABASE_URL="postgresql://..." \
+  my-app-api:latest \
+  pnpm --filter=api db:migrate
+
+# Or using docker-compose
+docker-compose -f docker-compose.prod.yml run --rm api \
+  pnpm --filter=api db:migrate
+```
+
+## Health Checks
+
+Both containers include health checks to ensure they're running correctly:
+
+### API Health Check
+```bash
+curl http://localhost:3001/api
+```
+
+Expected response:
+```json
+{
+  "message": "Welcome to the API",
+  "version": "1.0.0"
+}
+```
+
+### Web Health Check
+The Web Dockerfile includes a built-in health check that verifies the Next.js server is responding.
+
+## Nginx Reverse Proxy
+
+Use Nginx as a reverse proxy for SSL termination and load balancing:
+
+```nginx
+# /etc/nginx/sites-available/myapp
+
+# API
+server {
+    listen 80;
+    server_name api.yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/api.yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+# Web
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com www.yourdomain.com;
+
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+## SSL Certificates
+
+Use Let's Encrypt for free SSL certificates:
+
+```bash
+# Install certbot
+sudo apt-get install certbot python3-certbot-nginx
+
+# Get certificates
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+sudo certbot --nginx -d api.yourdomain.com
+
+# Auto-renewal is set up automatically
+```
+
+## Monitoring
+
+### Application Logs
+
+View container logs:
+
+```bash
+# API logs
+docker logs -f my-app-api
+
+# Web logs
+docker logs -f my-app-web
+
+# Using docker-compose
+docker-compose -f docker-compose.prod.yml logs -f api
+docker-compose -f docker-compose.prod.yml logs -f web
+```
+
+### Container Stats
+
+Monitor resource usage:
+
+```bash
+docker stats
+```
+
+### Health Monitoring
+
+Set up automated health checks using a service like UptimeRobot or Pingdom to monitor:
+- API endpoint: `https://api.yourdomain.com/api`
+- Web application: `https://yourdomain.com`
+
+## Backup Strategy
+
+### Database Backups
+
+Automated PostgreSQL backups:
+
+```bash
+#!/bin/bash
+# backup.sh
+
+BACKUP_DIR="/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+docker exec postgres pg_dump -U $DB_USER $DB_NAME | \
+  gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
+
+# Keep only last 30 days
+find $BACKUP_DIR -name "db_backup_*.sql.gz" -mtime +30 -delete
+```
+
+Add to crontab for daily backups:
+```bash
+0 2 * * * /path/to/backup.sh
+```
+
+### S3 Backups
+
+Configure S3 bucket versioning and lifecycle policies for automatic backups.
+
+## Scaling
+
+### Horizontal Scaling
+
+Run multiple API instances behind a load balancer:
+
+```yaml
+# docker-compose.prod.yml
+services:
+  api:
+    # ... configuration
+    deploy:
+      replicas: 3
+```
+
+### Database Scaling
+
+Consider:
+- Read replicas for PostgreSQL
+- Redis Cluster for high availability
+- Connection pooling (e.g., PgBouncer)
+
+## Security Checklist
+
+Before going to production:
+
+- [ ] All environment variables are set correctly
+- [ ] Secrets are not committed to version control
+- [ ] SSL/TLS certificates are configured
+- [ ] Database connections use SSL
+- [ ] Rate limiting is enabled
+- [ ] CORS is properly configured
+- [ ] Security headers are set (Helmet.js)
+- [ ] Firewall rules are configured
+- [ ] Backups are automated
+- [ ] Monitoring and alerts are set up
+- [ ] Stripe webhooks are configured with production URL
+- [ ] Email service is configured for production
+
+## Troubleshooting
+
+### Container Won't Start
+
+Check logs:
+```bash
+docker logs my-app-api
+```
+
+Common issues:
+- Missing environment variables
+- Database connection failure
+- Port already in use
+
+### Database Connection Issues
+
+Verify connection:
+```bash
+docker exec api node -e "console.log(process.env.DATABASE_URL)"
+```
+
+### Performance Issues
+
+Check resource usage:
+```bash
+docker stats
+```
+
+Consider:
+- Increasing container resources
+- Adding more replicas
+- Database query optimization
+
+## Next Steps
+
+- [Architecture](/docs/architecture) - Understand the system design
+- [API Reference](/docs/api) - Complete API documentation
+- [Getting Started](/docs/getting-started) - Development environment setup

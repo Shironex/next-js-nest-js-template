@@ -6,7 +6,7 @@ A modern, full-stack monorepo template featuring Next.js 15, NestJS, and a compr
 
 ## 🚧 Current Status
 
-This template is **95% complete** but still requires some final touches before it's ready for public use. We're actively working on the remaining items.
+This template is **98% complete** and includes comprehensive documentation, Docker support, and production-ready configurations.
 
 ### ✅ What's Complete
 
@@ -21,35 +21,31 @@ This template is **95% complete** but still requires some final touches before i
 - **Code Quality**: TypeScript, ESLint, Prettier, pre-commit hooks
 - **Legal Pages**: Privacy Policy, Terms of Service, Cookie Policy, GDPR
 - **Email Templates**: Beautiful email templates for auth flows
+- **Documentation**: Complete documentation site built with Fumadocs
+- **Docker**: Production-ready Dockerfiles and docker-compose configurations
+- **Stripe Integration**: Full subscription management and billing
 
 ### 🚧 Still To Do
 
-- [ ] **Documentation**
+- [x] **Documentation** ✅
 
-  - [ ] Complete setup and deployment guides
-  - [ ] API documentation with examples
-  - [ ] Environment variables documentation
-  - [ ] Contributing guidelines
+  - [x] Complete setup and deployment guides
+  - [x] API documentation with examples
+  - [x] Architecture documentation
+  - [x] Docker deployment guides
 
-- [ ] **Internationalization**
+- [x] **Internationalization** ✅
 
-  - [ ] Translate Polish messages in API responses to English
-  - [ ] Update error messages and validation text
-  - [ ] Standardize all user-facing text to English
+  - [x] Translate Polish messages in API responses to English
+  - [x] Update error messages and validation text
+  - [x] Standardize all user-facing text to English
 
-- [ ] **Docker Configuration**
+- [x] **Docker Configuration** ✅
 
-  - [ ] Create Dockerfile for API
-  - [ ] Create Dockerfile for Web
-  - [ ] Multi-stage builds for production
-  - [ ] Docker Compose for production deployment
-
-- [ ] **Deployment**
-
-  - [ ] Vercel deployment configuration
-  - [ ] Railway/Render deployment guides
-  - [ ] Database migration strategies
-  - [ ] Environment setup guides
+  - [x] Create Dockerfile for API with multi-stage build
+  - [x] Create Dockerfile for Web with multi-stage build
+  - [x] .dockerignore files for optimal builds
+  - [x] Docker Compose for production deployment
 
 - [ ] **Configuration**
 
@@ -70,7 +66,7 @@ This template is **95% complete** but still requires some final touches before i
 apps/
 ├── api/          # NestJS backend application
 ├── web/          # Next.js frontend application
-└── s3-server/    # Local S3-compatible server for development
+└── docs/         # Fumadocs documentation site
 
 packages/
 ├── ui/           # Shared shadcn/ui components
@@ -136,6 +132,23 @@ packages/
 - Hot reload in development
 - Structured error handling
 
+## 📚 Documentation
+
+Comprehensive documentation is available at the docs site. To start the documentation locally:
+
+```bash
+pnpm --filter=docs dev
+```
+
+Then visit http://localhost:3002
+
+The documentation includes:
+
+- **Getting Started**: Complete setup guide
+- **API Reference**: All endpoints with examples
+- **Architecture**: System design and patterns
+- **Deployment**: Production deployment with Docker
+
 ## 🚀 Quick Start (for development)
 
 ```bash
@@ -146,12 +159,53 @@ cd next-js-nest-js-template
 # Install dependencies
 pnpm install
 
-# Start development services
+# Start development services (PostgreSQL, Redis, Mailpit, S3)
 docker-compose up -d
+
+# Set up environment variables
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+
+# Run database migrations
+pnpm --filter=api db:migrate
 
 # Start development servers
 pnpm dev
 ```
+
+This will start:
+
+- **API** at http://localhost:3001
+- **Web** at http://localhost:3000
+- **Docs** at http://localhost:3002
+
+## 🐳 Docker Deployment
+
+Production-ready Dockerfiles are included for both API and Web applications.
+
+### Build Docker Images
+
+```bash
+# Build API image
+docker build -f apps/api/Dockerfile -t my-app-api:latest .
+
+# Build Web image
+docker build -f apps/web/Dockerfile -t my-app-web:latest .
+```
+
+### Production Deployment
+
+Use the included `docker-compose.prod.yml` for complete stack deployment:
+
+```bash
+# Copy and configure environment variables
+cp .env.prod.example .env.production
+
+# Deploy the entire stack
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+For detailed deployment instructions, see the [Deployment Documentation](http://localhost:3002/docs/deployment).
 
 ## 📦 Adding shadcn/ui Components
 

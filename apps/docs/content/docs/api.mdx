@@ -1,0 +1,409 @@
+---
+title: API Reference
+description: Complete reference for all API endpoints and features
+---
+
+## Overview
+
+The NestJS API provides a comprehensive backend with authentication, file uploads, Stripe integration, and more. All endpoints are available at `http://localhost:3001/api/v1` in development.
+
+## Interactive Documentation
+
+The API includes interactive Swagger documentation available at:
+
+**Development**: http://localhost:3001/api-docs
+
+The Swagger UI provides:
+- Complete endpoint documentation
+- Request/response schemas
+- Try-it-out functionality
+- Authentication testing
+
+## Authentication
+
+### Session-Based Authentication
+
+The API uses cookie-based session authentication with Redis storage:
+
+- **Secure cookies**: httpOnly, secure, sameSite
+- **Session duration**: 30 days
+- **CSRF protection**: Built-in token validation
+- **Account security**: Failed login tracking and lockout
+
+### Authentication Endpoints
+
+#### POST `/api/v1/auth/register`
+
+Register a new user account.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "MySecurePass123!",
+  "username": "johndoe",
+  "phoneNumber": "+1234567890",
+  "turnstileToken": "captcha-token"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Resource created successfully",
+  "code": 201,
+  "data": {
+    "message": "Registration completed successfully. Check your email inbox to verify your account."
+  }
+}
+```
+
+#### POST `/api/v1/auth/login`
+
+Authenticate a user and create a session.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "password": "MySecurePass123!",
+  "turnstileToken": "captcha-token"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "code": 200,
+  "data": {
+    "emailVerified": true
+  }
+}
+```
+
+**Headers:** Sets `session-token` cookie
+
+#### POST `/api/v1/auth/verify-email`
+
+Verify email address with code sent during registration.
+
+**Request Body:**
+```json
+{
+  "code": "ABC12345",
+  "turnstileToken": "captcha-token"
+}
+```
+
+**Authentication:** Required (must be logged in)
+
+#### POST `/api/v1/auth/forgot-password`
+
+Request a password reset link.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com",
+  "turnstileToken": "captcha-token"
+}
+```
+
+#### POST `/api/v1/auth/reset-password`
+
+Reset password using token from email.
+
+**Request Body:**
+```json
+{
+  "token": "reset-token-from-email",
+  "newPassword": "MyNewSecurePass123!",
+  "turnstileToken": "captcha-token"
+}
+```
+
+#### POST `/api/v1/auth/logout`
+
+Logout and invalidate current session.
+
+**Authentication:** Required
+
+## Stripe Integration
+
+### Subscription Management
+
+#### POST `/api/v1/stripe/create-checkout-session`
+
+Create a Stripe checkout session for subscription.
+
+**Request Body:**
+```json
+{
+  "priceId": "price_xxx",
+  "successUrl": "https://yourapp.com/success",
+  "cancelUrl": "https://yourapp.com/cancel"
+}
+```
+
+**Authentication:** Required
+
+#### POST `/api/v1/stripe/create-portal-session`
+
+Create a Stripe billing portal session.
+
+**Request Body:**
+```json
+{
+  "returnUrl": "https://yourapp.com/account"
+}
+```
+
+**Authentication:** Required
+
+#### POST `/api/v1/stripe/cancel-subscription`
+
+Cancel the current subscription.
+
+**Authentication:** Required
+
+#### GET `/api/v1/stripe/subscription-status`
+
+Get current subscription status.
+
+**Authentication:** Required
+
+**Response:**
+```json
+{
+  "status": "ACTIVE",
+  "currentPeriodEnd": "2024-12-31T23:59:59.000Z",
+  "cancelAtPeriodEnd": false,
+  "productName": "Premium Plan"
+}
+```
+
+#### GET `/api/v1/stripe/pricing-plans`
+
+Get available pricing plans.
+
+**Response:**
+```json
+{
+  "plans": [
+    {
+      "id": "prod_xxx",
+      "name": "Premium",
+      "description": "Perfect for small teams",
+      "prices": [
+        {
+          "id": "price_xxx",
+          "amount": 999,
+          "currency": "USD",
+          "interval": "month"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Webhook Processing
+
+#### POST `/api/v1/stripe/webhook`
+
+Stripe webhook endpoint for processing events.
+
+**Authentication:** Validated via Stripe signature
+
+**Processed Events:**
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+
+All webhook events are logged in the database for audit purposes.
+
+## Rate Limiting
+
+The API implements Redis-based rate limiting on sensitive endpoints:
+
+- **Registration**: 3 requests per 15 minutes
+- **Login**: 5 requests per 15 minutes
+- **Password Reset**: 3 requests per 15 minutes
+- **Email Verification**: 5 requests per 15 minutes
+
+Rate limit headers are included in responses:
+```
+X-RateLimit-Limit: 5
+X-RateLimit-Remaining: 4
+X-RateLimit-Reset: 1715781000
+```
+
+## Error Handling
+
+All errors follow a consistent format:
+
+**Validation Error (400):**
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "code": 400,
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email address",
+      "value": "invalid-email"
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "path": "/api/v1/auth/login"
+}
+```
+
+**Business Logic Error (400):**
+```json
+{
+  "success": false,
+  "message": "This email address is already taken",
+  "code": 400,
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "path": "/api/v1/auth/register"
+}
+```
+
+**Unauthorized (401):**
+```json
+{
+  "success": false,
+  "message": "Unauthorized",
+  "code": 401,
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "path": "/api/v1/protected-route"
+}
+```
+
+## Security Features
+
+### Turnstile CAPTCHA
+
+All public authentication endpoints require Cloudflare Turnstile verification:
+
+1. Load Turnstile on the frontend
+2. Get token from widget
+3. Include token in request body as `turnstileToken`
+
+### Account Security
+
+- **Password Requirements**: 8+ characters, 1 uppercase, 1 lowercase, 1 digit, 1 symbol
+- **Failed Login Tracking**: Locks account after 5 failed attempts
+- **Session Security**: HttpOnly, Secure, SameSite cookies
+- **CSRF Protection**: Built into session management
+
+### Email Verification
+
+New accounts must verify their email before accessing protected features:
+
+1. User registers → verification email sent
+2. User clicks link or enters code
+3. Account activated for full access
+
+## Database Schema
+
+### User Model
+
+```typescript
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  username              String    @unique
+  password              String
+  phoneNumber           String?
+  emailVerified         Boolean   @default(false)
+  role                  Role      @default(USER)
+  failedLoginAttempts   Int       @default(0)
+  accountLockedUntil    DateTime?
+  stripeCustomerId      String?   @unique
+  subscriptionStatus    String?   @default("FREE")
+  subscriptionId        String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+```
+
+### Session Model
+
+```typescript
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+```
+
+## File Uploads
+
+### S3 Integration
+
+The API includes AWS S3 integration for file uploads:
+
+- **Local Development**: Uses s3rver (http://localhost:4569)
+- **Production**: AWS S3 or compatible service
+- **Security**: Signed URLs, type validation, size limits
+- **Integration**: NestJS multer middleware
+
+Configuration in `.env`:
+```bash
+S3_ENDPOINT=http://localhost:4569
+S3_BUCKET=uploads
+S3_ACCESS_KEY_ID=S3RVER
+S3_SECRET_ACCESS_KEY=S3RVER
+```
+
+## Logging
+
+The API uses Winston for structured logging with file rotation:
+
+**Log Levels:**
+- `error`: Error messages
+- `warn`: Warning messages
+- `info`: Informational messages
+- `debug`: Debug information
+
+**Log Files:**
+- `logs/error.log`: Error logs
+- `logs/combined.log`: All logs
+- Automatic rotation after 20MB
+- Keep last 14 days of logs
+
+## Email System
+
+### React Email Templates
+
+The API uses React Email for beautiful, tested email templates:
+
+- **Verification Email**: Welcome + verification code
+- **Password Reset**: Secure reset link
+- **Account Locked**: Security notification
+- **Subscription**: Billing notifications
+
+### Development Testing
+
+Mailpit provides a web interface for viewing emails:
+- **Web UI**: http://localhost:8025
+- **SMTP**: localhost:1025
+
+## Next Steps
+
+- [Deployment](/docs/deployment) - Deploy to production
+- [Architecture](/docs/architecture) - Understand the system design
+- [Getting Started](/docs/getting-started) - Set up development environment

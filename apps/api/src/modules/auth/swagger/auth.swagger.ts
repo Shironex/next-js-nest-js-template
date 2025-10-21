@@ -229,7 +229,7 @@ export const LoginDocs = () =>
             errors: [
               {
                 field: 'email',
-                message: 'Niepoprawny adres email',
+                message: 'Invalid email address',
                 value: 'invalid-email',
               },
               {

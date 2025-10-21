@@ -16,9 +16,6 @@ COPY turbo.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/*/package.json ./packages/*/
 
-# Copy pnpm lockfile
-COPY pnpm-lock.yaml ./
-
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
@@ -54,7 +51,6 @@ COPY --from=builder /app/apps/web/package.json ./apps/web/
 COPY --from=builder /app/packages/ui/package.json ./packages/ui/
 COPY --from=builder /app/packages/typescript-config/package.json ./packages/typescript-config/
 COPY --from=builder /app/packages/eslint-config/package.json ./packages/eslint-config/
-COPY --from=builder /app/pnpm-lock.yaml ./
 
 # Install only production dependencies
 RUN pnpm install --frozen-lockfile --prod

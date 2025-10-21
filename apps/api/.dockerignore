@@ -1,27 +1,22 @@
 # Dependencies
 node_modules
-.pnpm-store
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
 
 # Testing
 coverage
-test
 *.spec.ts
-*.test.ts
-jest.config.*
-.jest
-
-# Development
-.env.local
-.env.development
-.env.test
-*.log
-logs
+*.e2e-spec.ts
+test
+__tests__
 
 # IDE
 .vscode
 .idea
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
@@ -31,26 +26,30 @@ Thumbs.db
 .git
 .gitignore
 
-# Build artifacts
-dist
+# Environment
+.env
+.env.local
+.env.*.local
 
-# Docker
-Dockerfile*
-.dockerignore
+# Build
+dist
+build
+
+# Logs
+logs
+*.log
 
 # Documentation
 README.md
+CHANGELOG.md
 *.md
 
-# Linting and formatting
-.eslintrc.*
-.eslintignore
-.prettierrc.*
-.prettierignore
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
 
-# TypeScript
-tsconfig.json
-tsconfig.*.json
-
-# Misc
-.husky
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml

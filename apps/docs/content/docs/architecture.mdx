@@ -1,0 +1,495 @@
+---
+title: Architecture
+description: Understand the system design and architecture decisions
+---
+
+## System Overview
+
+This template is built as a modern monorepo using Turborepo, featuring a clear separation between the API backend and web frontend while sharing common configuration and utilities.
+
+## Monorepo Structure
+
+```
+next-js-nest-js-template/
+├── apps/
+│   ├── api/          # NestJS backend
+│   ├── web/          # Next.js frontend
+│   └── docs/         # Fumadocs documentation
+├── packages/
+│   ├── ui/           # Shared shadcn/ui components
+│   ├── typescript-config/   # Shared TypeScript configs
+│   └── eslint-config/       # Shared ESLint configs
+├── docker-compose.yml       # Development services
+├── turbo.json              # Turborepo configuration
+└── pnpm-workspace.yaml     # pnpm workspace config
+```
+
+### Benefits of Monorepo
+
+- **Code Sharing**: Shared UI components, types, and configs
+- **Consistent Tooling**: Same linting, formatting, and type-checking
+- **Atomic Changes**: Update API and frontend in a single commit
+- **Efficient Builds**: Turborepo caches and parallelizes builds
+- **Type Safety**: Share types between backend and frontend
+
+## Backend Architecture (NestJS)
+
+### Module Structure
+
+The API follows a modular architecture with clear separation of concerns:
+
+```
+apps/api/src/
+├── modules/
+│   ├── auth/         # Authentication module
+│   ├── user/         # User management
+│   ├── mail/         # Email service
+│   ├── logger/       # Winston logging
+│   ├── rate-limit/   # Redis rate limiting
+│   ├── s3/          # File uploads
+│   ├── stripe/      # Payment processing
+│   └── prisma/      # Database service
+├── common/
+│   ├── decorators/  # Custom decorators
+│   ├── dto/         # Data Transfer Objects
+│   ├── filters/     # Exception filters
+│   ├── guards/      # Auth & rate limit guards
+│   └── middleware/  # Request middleware
+├── main.ts          # Application entry point
+└── app.module.ts    # Root module
+```
+
+### Key Modules
+
+#### Auth Module
+
+Handles all authentication concerns:
+- User registration with email verification
+- Session-based login with Redis storage
+- Password reset flow with secure tokens
+- Account security (lockout, failed attempts tracking)
+- Turnstile CAPTCHA verification
+
+**Key Components:**
+- `AuthService`: Business logic
+- `AuthController`: HTTP endpoints
+- `SessionGuard`: Session validation
+- `TurnstileGuard`: CAPTCHA verification
+
+#### Prisma Module
+
+Database access layer using Prisma ORM:
+- Type-safe database queries
+- Automatic migrations
+- Connection pooling
+- Transaction support
+
+**Schema Location:** `apps/api/prisma/schema.prisma`
+
+**Generated Client:** `apps/api/generated/prisma`
+
+#### Logger Module
+
+Structured logging with Winston:
+- File rotation (20MB max size)
+- Multiple transports (file, console)
+- Log levels (error, warn, info, debug)
+- Request/response logging
+- Error tracking
+
+#### Rate Limit Module
+
+Redis-based rate limiting:
+- Per-endpoint configuration
+- IP-based tracking
+- Sliding window algorithm
+- Custom limits via decorators
+
+#### S3 Module
+
+File upload handling:
+- AWS S3 integration
+- Local development with s3rver
+- Signed URLs for security
+- Type and size validation
+
+#### Stripe Module
+
+Complete payment integration:
+- Subscription management
+- Webhook processing
+- Billing portal
+- Audit logging for all events
+
+### Middleware Stack
+
+Request flow through the middleware stack:
+
+1. **Logger Middleware**: Log incoming requests
+2. **CORS**: Handle cross-origin requests
+3. **Helmet**: Security headers
+4. **Rate Limit Guard**: Check rate limits
+5. **Turnstile Guard**: Verify CAPTCHA (on auth endpoints)
+6. **Session Guard**: Validate session
+7. **Controller**: Handle request
+8. **Exception Filter**: Format errors
+9. **Logger Middleware**: Log response
+
+### Database Schema
+
+#### User Model
+
+```prisma
+model User {
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  username              String    @unique
+  password              String
+  phoneNumber           String?
+  emailVerified         Boolean   @default(false)
+  role                  Role      @default(USER)
+  failedLoginAttempts   Int       @default(0)
+  accountLockedUntil    DateTime?
+  stripeCustomerId      String?   @unique
+  subscriptionStatus    String?   @default("FREE")
+  subscriptionId        String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  sessions              Session[]
+  emailVerificationCodes EmailVerificationCode[]
+  passwordResetTokens   PasswordResetToken[]
+  stripeWebhookLogs     StripeWebhookLog[]
+}
+```
+
+#### Session Model
+
+```prisma
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+```
+
+#### Stripe Webhook Log
+
+```prisma
+model StripeWebhookLog {
+  id              String   @id @default(uuid())
+  userId          String?
+  eventType       String
+  stripeEventId   String   @unique
+  status          String
+  errorMessage    String?
+  payload         Json
+  createdAt       DateTime @default(now())
+
+  user            User?    @relation(fields: [userId], references: [id])
+}
+```
+
+### Security Architecture
+
+#### Authentication Flow
+
+1. **Registration:**
+   - User submits form with CAPTCHA
+   - Password hashed with scrypt
+   - Email verification code generated
+   - Welcome email sent with code
+   - User account created (unverified)
+
+2. **Login:**
+   - User submits credentials + CAPTCHA
+   - Failed attempts tracked (max 5)
+   - Account locked after 5 failures
+   - Session created in Redis
+   - Cookie set (httpOnly, secure, sameSite)
+
+3. **Email Verification:**
+   - User enters code from email
+   - Code validated (expires after 10 min)
+   - Account marked as verified
+   - Full access granted
+
+4. **Password Reset:**
+   - User requests reset + CAPTCHA
+   - Token generated (expires after 1 hour)
+   - Reset email sent
+   - User sets new password
+   - All sessions invalidated
+
+#### Session Management
+
+- **Storage**: Redis for fast access
+- **Duration**: 30 days
+- **Security**: httpOnly, secure, sameSite=strict
+- **Tracking**: IP address and user agent stored
+- **Invalidation**: Logout, password change, account lock
+
+#### Rate Limiting
+
+- **Implementation**: Redis-based sliding window
+- **Scope**: Per-IP, per-endpoint
+- **Headers**: X-RateLimit-* headers in responses
+- **Configuration**: Decorator-based (@RateLimit())
+
+## Frontend Architecture (Next.js)
+
+### Application Structure
+
+```
+apps/web/
+├── app/              # App Router (Next.js 15)
+│   ├── (auth)/      # Auth route group
+│   ├── (marketing)/ # Public pages
+│   ├── dashboard/   # Protected pages
+│   └── layout.tsx   # Root layout
+├── components/      # App-specific components
+├── hooks/          # Custom React hooks
+├── lib/            # Utilities and configs
+└── public/         # Static assets
+```
+
+### State Management
+
+#### Server State (React Query)
+
+- **API calls**: All backend communication
+- **Caching**: Automatic with stale-while-revalidate
+- **Mutations**: Optimistic updates
+- **Devtools**: Development debugging
+
+**Example Hook:**
+```typescript
+export function useUser() {
+  return useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data } = await api.get('/auth/me')
+      return data
+    },
+  })
+}
+```
+
+#### Client State
+
+- **Forms**: React Hook Form
+- **Validation**: Zod schemas
+- **Theme**: next-themes
+- **UI State**: React hooks (useState, useReducer)
+
+### Form Handling
+
+All forms use React Hook Form with Zod validation:
+
+```typescript
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+})
+
+const form = useForm<z.infer<typeof schema>>({
+  resolver: zodResolver(schema),
+})
+```
+
+### API Client
+
+Axios-based client with interceptors:
+
+```typescript
+// lib/api.ts
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true, // Send cookies
+})
+
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Redirect to login
+    }
+    return Promise.reject(error)
+  }
+)
+```
+
+### Authentication Flow
+
+1. User submits login form
+2. Frontend sends request to API
+3. API validates and creates session
+4. Cookie set automatically (httpOnly)
+5. Frontend redirects to dashboard
+6. Subsequent requests include cookie
+7. Session validated on each request
+
+### Stripe Integration
+
+#### Checkout Flow
+
+1. User selects plan on pricing page
+2. Frontend calls `/api/v1/stripe/create-checkout-session`
+3. API creates Stripe Checkout session
+4. User redirected to Stripe
+5. User completes payment
+6. Stripe redirects back with session_id
+7. Webhook updates database
+8. User gains premium access
+
+#### Subscription Management
+
+Users can manage subscriptions via Stripe's billing portal:
+
+```typescript
+const { mutate: openPortal } = useMutation({
+  mutationFn: async () => {
+    const { data } = await api.post('/stripe/create-portal-session', {
+      returnUrl: window.location.href,
+    })
+    window.location.href = data.url
+  },
+})
+```
+
+## Data Flow
+
+### Typical Request Flow
+
+1. **User Action**: Button click, form submit
+2. **Frontend Validation**: Zod schema validation
+3. **API Request**: Axios POST with credentials
+4. **Middleware**: Logger, CORS, rate limit
+5. **Guards**: Session validation, CAPTCHA
+6. **Controller**: Route to appropriate handler
+7. **Service**: Business logic execution
+8. **Database**: Prisma query
+9. **Response**: Formatted DTO
+10. **Frontend**: Update UI, cache
+
+### Webhook Flow (Stripe)
+
+1. **Event**: User completes checkout on Stripe
+2. **Webhook**: Stripe sends event to API
+3. **Validation**: Verify signature
+4. **Processing**: StripeService handles event
+5. **Database**: Update user subscription
+6. **Audit Log**: Store event in database
+7. **Email**: Send confirmation to user
+
+## Performance Optimizations
+
+### Backend
+
+- **Connection Pooling**: Prisma connection pool
+- **Redis Caching**: Session and rate limit data
+- **Query Optimization**: Selective field loading
+- **Compression**: gzip responses
+
+### Frontend
+
+- **Code Splitting**: Automatic with Next.js
+- **Image Optimization**: next/image component
+- **Font Optimization**: next/font
+- **Turbopack**: Fast bundler in development
+- **React Query**: Efficient data caching
+- **Static Generation**: Pre-render marketing pages
+
+## Testing Strategy
+
+### Backend Testing
+
+- **Unit Tests**: Jest with extensive mocking
+- **Integration Tests**: Supertest for E2E
+- **Coverage**: >80% excluding DTOs/entities
+- **Mocking**: External services (Stripe, S3, Mail)
+
+**Test Structure:**
+```typescript
+describe('AuthService', () => {
+  let service: AuthService
+  let prisma: PrismaService
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [AuthService, mockPrisma],
+    }).compile()
+
+    service = module.get(AuthService)
+  })
+
+  it('should register user', async () => {
+    // Test implementation
+  })
+})
+```
+
+### Frontend Testing
+
+Tests can be added for:
+- Component rendering
+- User interactions
+- Form validation
+- API integration
+- Accessibility
+
+## Deployment Architecture
+
+### Production Setup
+
+```
+┌─────────────┐
+│   Nginx     │ (SSL termination, load balancing)
+└──────┬──────┘
+       │
+   ┌───┴───┬────────┐
+   │       │        │
+┌──▼──┐ ┌──▼──┐ ┌──▼──┐
+│ API │ │ API │ │ API │ (Multiple instances)
+└──┬──┘ └──┬──┘ └──┬──┘
+   │       │        │
+   └───┬───┴────┬───┘
+       │        │
+   ┌───▼───┐ ┌──▼───┐
+   │Redis  │ │ PG   │ (Shared services)
+   └───────┘ └──────┘
+```
+
+### Containerization
+
+- **API**: Multi-stage build with Node 20 Alpine
+- **Web**: Standalone Next.js with optimized output
+- **Services**: PostgreSQL, Redis, S3rver containers
+- **Orchestration**: Docker Compose (dev) or Kubernetes (prod)
+
+## Scaling Considerations
+
+### Horizontal Scaling
+
+- **API**: Stateless, can run multiple instances
+- **Web**: Stateless Next.js, multiple instances
+- **Sessions**: Stored in Redis (shared across instances)
+- **Database**: Read replicas for scaling reads
+
+### Vertical Scaling
+
+- **Database**: Increase resources for complex queries
+- **Redis**: Increase memory for more sessions
+- **API**: Increase CPU for computational tasks
+
+## Next Steps
+
+- [Getting Started](/docs/getting-started) - Set up your environment
+- [API Reference](/docs/api) - Explore the API
+- [Deployment](/docs/deployment) - Deploy to production

@@ -1,0 +1,219 @@
+---
+title: Getting Started
+description: Set up your development environment and run the application
+---
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js**: Version 20 or higher
+- **pnpm**: Version 10.4.1 (required package manager)
+- **Docker**: For running required services (PostgreSQL, Redis, etc.)
+- **Git**: For version control
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Shironex/next-js-nest-js-template.git
+cd next-js-nest-js-template
+```
+
+### 2. Install Dependencies
+
+This project uses pnpm as its package manager:
+
+```bash
+pnpm install
+```
+
+### 3. Start Docker Services
+
+The application requires several services that run in Docker containers:
+
+```bash
+docker-compose up -d
+```
+
+This will start:
+- **PostgreSQL** (port 5432) - Main database
+- **Redis** (port 6379) - Session and rate limit storage
+- **Mailpit** (ports 1025/8025) - Email testing server
+- **S3rver** (port 4569) - Local S3-compatible storage
+
+### 4. Configure Environment Variables
+
+#### API Configuration
+
+Copy the example environment file:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Key environment variables for the API:
+
+```bash
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
+
+# Redis
+REDIS_URL="redis://localhost:6379"
+
+# Email
+MAIL_HOST="localhost"
+MAIL_PORT=1025
+MAIL_FROM="noreply@example.com"
+
+# S3
+S3_ENDPOINT="http://localhost:4569"
+S3_BUCKET="uploads"
+
+# Stripe (optional for development)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+```
+
+#### Web Configuration
+
+Copy the example environment file:
+
+```bash
+cp apps/web/.env.example apps/web/.env
+```
+
+Key environment variables for the web app:
+
+```bash
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_TURNSTILE_SITE_KEY="1x00000000000000000000AA"
+TURNSTILE_SECRET_KEY="1x0000000000000000000000000000000AA"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+```
+
+### 5. Initialize the Database
+
+Run Prisma migrations to set up the database schema:
+
+```bash
+pnpm --filter=api db:migrate
+```
+
+Generate the Prisma client:
+
+```bash
+pnpm --filter=api db:generate
+```
+
+### 6. Start the Development Servers
+
+Start all applications in development mode:
+
+```bash
+pnpm dev
+```
+
+This will start:
+- **API** at http://localhost:3001
+- **Web** at http://localhost:3000
+- **Docs** at http://localhost:3002
+
+Or start individual applications:
+
+```bash
+# Start only the API
+pnpm --filter=api start:dev
+
+# Start only the web app
+pnpm --filter=web dev
+
+# Start only the docs
+pnpm --filter=docs dev
+```
+
+## Verify Installation
+
+### Check API Health
+
+Visit http://localhost:3001/api or use curl:
+
+```bash
+curl http://localhost:3001/api
+```
+
+You should see a welcome message.
+
+### Check API Documentation
+
+The API includes Swagger documentation at:
+
+http://localhost:3001/api-docs
+
+### Check Web Application
+
+Visit http://localhost:3000 to see the web application.
+
+### Check Email Service
+
+Visit http://localhost:8025 to access Mailpit's web interface for viewing test emails.
+
+## Development Workflow
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Run API tests only
+pnpm --filter=api test
+
+# Run tests in watch mode
+pnpm --filter=api test:watch
+
+# Run tests with coverage
+pnpm --filter=api test:cov
+```
+
+### Linting and Formatting
+
+```bash
+# Lint all code
+pnpm lint
+
+# Format all code
+pnpm format
+
+# Type check
+pnpm typecheck
+```
+
+### Database Management
+
+```bash
+# Open Prisma Studio (database GUI)
+pnpm --filter=api db:studio
+
+# Create a new migration
+pnpm --filter=api db:migrate
+
+# Reset the database
+pnpm --filter=api db:reset
+```
+
+### Stripe Integration (Optional)
+
+If you want to test Stripe webhooks locally:
+
+1. Install the Stripe CLI: https://stripe.com/docs/stripe-cli
+2. Login: `stripe login`
+3. Forward webhooks: `pnpm --filter=api stripe:listen`
+4. Copy the webhook secret to your `.env` file
+
+## Next Steps
+
+- [API Reference](/docs/api) - Learn about available API endpoints
+- [Architecture](/docs/architecture) - Understand the system design
+- [Deployment](/docs/deployment) - Deploy to production

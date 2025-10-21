@@ -3,10 +3,14 @@ import { IsString, MinLength } from 'class-validator';
 
 export class ResendVerificationDto {
   @ApiProperty({
-    description: 'Cloudflare Turnstile token for bot verification',
-    example: 'turnstile_token_here',
+    description: 'Turnstile CAPTCHA token for verification',
+    example: '0.Ab1cd2Ef3gH4...',
   })
-  @IsString()
-  @MinLength(1, { message: 'Please complete the verification' })
+  @IsString({
+    message: 'Invalid captcha code format',
+  })
+  @MinLength(1, {
+    message: 'Captcha verification is required',
+  })
   turnstileToken: string;
 }
