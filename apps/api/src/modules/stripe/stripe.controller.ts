@@ -4,7 +4,6 @@ import {
   Get,
   Body,
   UseGuards,
-  Req,
   HttpException,
   HttpStatus,
   Logger,
@@ -17,10 +16,10 @@ import {
 } from '@nestjs/swagger';
 import { StripeService } from './stripe.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
+import { AdminGuard } from '../../common/guards/admin.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { CreateCheckoutSessionDto } from './dto/create-checkout-session.dto';
 import { CreatePortalSessionDto } from './dto/create-portal-session.dto';
-import { AuthRequest } from '../../common/interfaces/auth-request.interface';
 import { ApiResponseDto } from '../../common/interfaces/api-response.interface';
 import { User } from '../../../generated/prisma';
 import { Public } from '../../common/decorators/public.decorator';
@@ -47,7 +46,7 @@ export class StripeController {
     const logger = new Logger('StripeController');
 
     try {
-      logger.log(`[DEBUG] Controller received request`, {
+      logger.debug(`Controller received checkout session request`, {
         userId: user?.id,
         userEmail: user?.email,
         dto: {
@@ -58,7 +57,7 @@ export class StripeController {
       });
 
       if (!user || !user.id) {
-        logger.error('[DEBUG] Invalid user object received', { user });
+        logger.error('Invalid user object received', { user });
         throw new Error('Invalid user authentication');
       }
 
@@ -69,7 +68,7 @@ export class StripeController {
         dto.cancelUrl,
       );
 
-      logger.log(`[DEBUG] Successfully created checkout session`, {
+      logger.debug(`Successfully created checkout session`, {
         userId: user.id,
         sessionId: session.id,
         sessionUrl: session.url,
@@ -84,7 +83,7 @@ export class StripeController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      logger.error('[DEBUG] Controller error occurred', {
+      logger.error('Controller error occurred', {
         userId: user?.id,
         errorMessage: error.message,
         errorStack: error.stack,
@@ -121,7 +120,7 @@ export class StripeController {
     const logger = new Logger('StripeController');
 
     try {
-      logger.log(`[DEBUG] Portal session request received`, {
+      logger.debug(`Portal session request received`, {
         userId: user?.id,
         userEmail: user?.email,
         dto: {
@@ -130,10 +129,9 @@ export class StripeController {
       });
 
       if (!user || !user.id) {
-        logger.error(
-          '[DEBUG] Invalid user object received for portal session',
-          { user },
-        );
+        logger.error('Invalid user object received for portal session', {
+          user,
+        });
         throw new Error('Invalid user authentication');
       }
 
@@ -142,7 +140,7 @@ export class StripeController {
         dto.returnUrl,
       );
 
-      logger.log(`[DEBUG] Successfully created portal session`, {
+      logger.debug(`Successfully created portal session`, {
         userId: user.id,
         sessionUrl: session.url,
       });
@@ -155,7 +153,7 @@ export class StripeController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      logger.error('[DEBUG] Portal session error occurred', {
+      logger.error('Portal session error occurred', {
         userId: user?.id,
         errorMessage: error.message,
         errorStack: error.stack,
@@ -272,24 +270,12 @@ export class StripeController {
   }
 
   @Post('sync-products')
+  @UseGuards(AdminGuard)
   @ApiOperation({ summary: 'Sync products from Stripe (Admin only)' })
   @ApiResponse({ status: 200, description: 'Products synced successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async syncProducts(
-    @Req() req: AuthRequest,
-  ): Promise<ApiResponseDto<{ message: string }>> {
-    if (req.user.role !== 'ADMIN') {
-      throw new HttpException(
-        {
-          success: false,
-          error: 'Only admins can sync products',
-          timestamp: new Date().toISOString(),
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
+  async syncProducts(): Promise<ApiResponseDto<{ message: string }>> {
     try {
       await this.stripeService.syncProducts();
 

@@ -26,7 +26,7 @@ export class StripeService {
     this.stripe = new Stripe(
       this.configService.get('STRIPE_SECRET_KEY') || '',
       {
-        apiVersion: '2025-08-27.basil',
+        apiVersion: '2025-10-29.clover',
       },
     );
   }
@@ -74,21 +74,21 @@ export class StripeService {
     cancelUrl: string,
   ): Promise<Stripe.Checkout.Session> {
     try {
-      this.logger.info(
-        `[DEBUG] Starting createCheckoutSession for userId: ${userId}, priceId: ${priceId}`,
+      this.logger.debug(
+        `Starting createCheckoutSession for userId: ${userId}, priceId: ${priceId}`,
       );
 
       const subscription = await this.prisma.subscription.findUnique({
         where: { userId },
       });
 
-      this.logger.info(
-        `[DEBUG] Found subscription: exists=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}, status=${subscription?.status}`,
+      this.logger.debug(
+        `Found subscription: exists=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}, status=${subscription?.status}`,
       );
 
       if (!subscription || !subscription.stripeCustomerId) {
-        this.logger.info(
-          `[DEBUG] Creating new customer - hasSubscription=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}`,
+        this.logger.debug(
+          `Creating new customer - hasSubscription=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}`,
         );
 
         const user = await this.prisma.user.findUnique({
@@ -96,13 +96,11 @@ export class StripeService {
         });
 
         if (!user) {
-          this.logger.error(`[DEBUG] User not found for userId: ${userId}`);
+          this.logger.error(`User not found for userId: ${userId}`);
           throw new Error('User not found');
         }
 
-        this.logger.info(
-          `[DEBUG] Found user ${user.email}, creating Stripe customer`,
-        );
+        this.logger.debug(`Found user ${user.email}, creating Stripe customer`);
 
         const customer = await this.createCustomer(
           userId,
@@ -110,8 +108,8 @@ export class StripeService {
           user.username,
         );
 
-        this.logger.info(
-          `[DEBUG] Created customer ${customer.id}, creating checkout session`,
+        this.logger.debug(
+          `Created customer ${customer.id}, creating checkout session`,
         );
 
         const checkoutSessionData: Stripe.Checkout.SessionCreateParams = {
@@ -131,16 +129,16 @@ export class StripeService {
           },
         };
 
-        this.logger.info(
-          `[DEBUG] Checkout session data for new customer:`,
+        this.logger.debug(
+          `Checkout session data for new customer:`,
           JSON.stringify(checkoutSessionData),
         );
 
         return this.stripe.checkout.sessions.create(checkoutSessionData);
       }
 
-      this.logger.info(
-        `[DEBUG] Using existing customer ${subscription.stripeCustomerId} for checkout session`,
+      this.logger.debug(
+        `Using existing customer ${subscription.stripeCustomerId} for checkout session`,
       );
 
       const checkoutSessionData: Stripe.Checkout.SessionCreateParams = {
@@ -160,8 +158,8 @@ export class StripeService {
         },
       };
 
-      this.logger.info(
-        `[DEBUG] Checkout session data for existing customer:`,
+      this.logger.debug(
+        `Checkout session data for existing customer:`,
         JSON.stringify(checkoutSessionData),
       );
 
@@ -182,32 +180,30 @@ export class StripeService {
     returnUrl: string,
   ): Promise<Stripe.BillingPortal.Session> {
     try {
-      this.logger.info(
-        `[DEBUG] Starting createPortalSession for userId: ${userId}, returnUrl: ${returnUrl}`,
+      this.logger.debug(
+        `Starting createPortalSession for userId: ${userId}, returnUrl: ${returnUrl}`,
       );
 
       const subscription = await this.prisma.subscription.findUnique({
         where: { userId },
       });
 
-      this.logger.info(
-        `[DEBUG] Found subscription: exists=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}, status=${subscription?.status}`,
+      this.logger.debug(
+        `Found subscription: exists=${!!subscription}, hasCustomerId=${!!subscription?.stripeCustomerId}, status=${subscription?.status}`,
       );
 
       if (!subscription) {
-        this.logger.error(`[DEBUG] No subscription found for user ${userId}`);
+        this.logger.error(`No subscription found for user ${userId}`);
         throw new Error('No subscription found for user');
       }
 
       if (!subscription.stripeCustomerId) {
-        this.logger.error(
-          `[DEBUG] No stripeCustomerId found for user ${userId}`,
-        );
+        this.logger.error(`No stripeCustomerId found for user ${userId}`);
         throw new Error('No Stripe customer ID found for subscription');
       }
 
-      this.logger.info(
-        `[DEBUG] Creating portal session for customer ${subscription.stripeCustomerId}`,
+      this.logger.debug(
+        `Creating portal session for customer ${subscription.stripeCustomerId}`,
       );
 
       const portalSessionData = {
@@ -215,8 +211,8 @@ export class StripeService {
         return_url: returnUrl,
       };
 
-      this.logger.info(
-        `[DEBUG] Portal session data:`,
+      this.logger.debug(
+        `Portal session data:`,
         JSON.stringify(portalSessionData),
       );
 
