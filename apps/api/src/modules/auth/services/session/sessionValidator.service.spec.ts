@@ -26,11 +26,7 @@ describe('SessionValidatorService', () => {
     role: 'USER' as any,
     isActive: true,
     emailVerified: true,
-    failedLoginAttempts: 0,
-    lastFailedLoginAt: null,
-    lockedUntil: null,
     lastPasswordChangeAt: null,
-    passwordChangeCount: 0,
     createdAt: new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01'),
   };

@@ -31,10 +31,6 @@ const createMockUser = (overrides?: Partial<User>): User => ({
   isActive: true,
   role: Role.USER,
   lastPasswordChangeAt: null,
-  passwordChangeCount: 0,
-  failedLoginAttempts: 0,
-  lastFailedLoginAt: null,
-  lockedUntil: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
@@ -73,11 +69,7 @@ describe('AuthService', () => {
     emailVerified: true,
     isActive: true,
     role: Role.USER,
-    failedLoginAttempts: 0,
-    lastFailedLoginAt: null,
-    lockedUntil: null,
     lastPasswordChangeAt: null,
-    passwordChangeCount: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -963,7 +955,6 @@ describe('AuthService', () => {
         email: 'test@example.com',
         password: hashedPassword,
         lastPasswordChangeAt: new Date(),
-        passwordChangeCount: 1,
       });
 
       passwordResetService.findAndDeleteResetToken.mockResolvedValue(
@@ -1122,7 +1113,6 @@ describe('AuthService', () => {
         email: 'test@example.com',
         password: hashedPassword,
         lastPasswordChangeAt: new Date(),
-        passwordChangeCount: 1,
       });
 
       passwordResetService.findAndDeleteResetToken.mockResolvedValue(

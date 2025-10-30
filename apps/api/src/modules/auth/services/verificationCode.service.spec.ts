@@ -33,11 +33,7 @@ describe('VerificationCodeService', () => {
     role: Role.USER,
     isActive: true,
     emailVerified: false,
-    failedLoginAttempts: 0,
-    lastFailedLoginAt: null,
-    lockedUntil: null,
     lastPasswordChangeAt: null,
-    passwordChangeCount: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

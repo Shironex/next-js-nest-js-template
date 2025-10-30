@@ -20,11 +20,7 @@ describe('PasswordResetService', () => {
     emailVerified: true,
     isActive: true,
     role: Role.USER,
-    failedLoginAttempts: 0,
-    lastFailedLoginAt: null,
-    lockedUntil: null,
     lastPasswordChangeAt: null,
-    passwordChangeCount: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
