@@ -50,11 +50,12 @@ class ApiClient {
         // Handle 401 Unauthorized - session expired
         if (error.response?.status === 401) {
           // Don't redirect if already on auth pages
-          const isAuthPage = window.location.pathname.startsWith('/')
+          const pathname = window.location.pathname
+          const isAuthPage = pathname.startsWith('/auth')
 
           if (!isAuthPage) {
-            // Clear any client-side auth state
-            window.location.href = '/?expired=true'
+            // Clear any client-side auth state and redirect to login
+            window.location.href = '/auth/login?expired=true'
           }
         }
 

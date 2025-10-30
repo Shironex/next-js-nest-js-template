@@ -8,7 +8,7 @@ const API_URL = clientEnv.NEXT_PUBLIC_API_URL
 const protectedRoutes = ['/dashboard']
 
 // Routes that should redirect to dashboard if already authenticated
-const authRoutes = ['/login', '/register', '/auth']
+const authRoutes = ['/auth']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
 
   // If accessing protected route without session, redirect to login
   if (isProtectedRoute && !sessionCookie) {
-    const loginUrl = new URL('/', request.url)
+    const loginUrl = new URL('/auth/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
 
       // If on protected route but session is invalid, redirect to login
       if (isProtectedRoute && !isAuthenticated) {
-        const loginUrl = new URL('/', request.url)
+        const loginUrl = new URL('/auth/login', request.url)
         loginUrl.searchParams.set('redirect', pathname)
         loginUrl.searchParams.set('expired', 'true')
 
@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
     } catch (error) {
       // If backend is unreachable and trying to access protected route
       if (isProtectedRoute) {
-        const loginUrl = new URL('/', request.url)
+        const loginUrl = new URL('/auth/login', request.url)
         loginUrl.searchParams.set('redirect', pathname)
         loginUrl.searchParams.set('error', 'backend_unreachable')
         return NextResponse.redirect(loginUrl)
