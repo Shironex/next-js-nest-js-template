@@ -413,9 +413,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For questions, issues, or feature requests:
 
-- 📝 Open an [issue](https://github.com/your-username/repo-name/issues)
-- 💬 Start a [discussion](https://github.com/your-username/repo-name/discussions)
-- 📧 Email: your-email@example.com
+- 📝 Open an [issue](https://github.com/Shironex/next-js-nest-js-template/issues)
+- 💬 Start a [discussion](https://github.com/Shironex/next-js-nest-js-template/discussions)
+- 📧 Email: support@taketach.pl
 
 ---
 
