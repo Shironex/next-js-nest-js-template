@@ -21,14 +21,8 @@ model User {
   isActive      Boolean @default(true)
   emailVerified Boolean @default(false)
 
-  // Account security fields
-  failedLoginAttempts Int       @default(0)
-  lastFailedLoginAt   DateTime?
-  lockedUntil         DateTime?
-  
   // Password change tracking
   lastPasswordChangeAt DateTime?
-  passwordChangeCount  Int       @default(0)
 
   EmailVerificationCode EmailVerificationCode[]
   PasswordResetToken    PasswordResetToken[]
