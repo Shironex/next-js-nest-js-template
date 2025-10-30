@@ -135,11 +135,7 @@ export class SessionValidatorService {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     const {
       password,
-      failedLoginAttempts,
-      lastFailedLoginAt,
-      lockedUntil,
       lastPasswordChangeAt,
-      passwordChangeCount,
       createdAt,
       updatedAt: userUpdatedAt,
       ...safeUser

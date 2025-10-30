@@ -132,9 +132,6 @@ export class AuthService {
     const { email, password } = data;
     this.logger.info('User login attempt', { email });
 
-    // const ipAddress = getClientIp(request);
-    // const userAgent = request.get('user-agent');
-
     try {
       const user = await this.usersRepository.findByEmail(email);
 
@@ -142,23 +139,6 @@ export class AuthService {
         this.logger.warn('Login failed - user not found', { email });
         throw new UnauthorizedException('Invalid login credentials');
       }
-
-      //TODO: Implement this after production launch no needed for now
-      // Check if account is locked
-      // const accountStatus =
-      //   await this.accountSecurityService.checkAccountStatus(user.id);
-
-      // if (accountStatus.isLocked) {
-      //   this.logger.warn('Login blocked - account locked', {
-      //     userId: user.id,
-      //     email,
-      //     lockedUntil: accountStatus.lockedUntil,
-      //   });
-      //   throw new ForbiddenException({
-      //     message: this.i18n.t('auth.login.accountLocked'),
-      //     lockedUntil: accountStatus.lockedUntil,
-      //   });
-      // }
 
       const isValidPassword = await this.passwordHashingService.verifyPassword(
         user.password,
@@ -171,33 +151,8 @@ export class AuthService {
           userId: user.id,
         });
 
-        // Record failed attempt
-        // const status = await this.accountSecurityService.recordFailedAttempt(
-        //   user.id,
-        //   ipAddress,
-        //   userAgent,
-        // );
-
-        // if (status.isLocked) {
-        //   // Send email notification about account lockout
-        //   await this.mailService.sendAccountLockedEmail(
-        //     user.email,
-        //     user.username,
-        //     status.lockedUntil!,
-        //     status.failedAttempts,
-        //   );
-
-        //   throw new ForbiddenException({
-        //     message: this.i18n.t('auth.login.accountLockedDueToFailedAttempts'),
-        //     lockedUntil: status.lockedUntil,
-        //   });
-        // }
-
         throw new UnauthorizedException('Invalid login credentials');
       }
-
-      // Reset failed attempts on successful login
-      // await this.accountSecurityService.resetFailedAttempts(user.id);
 
       this.logger.info('Login successful', {
         email,
