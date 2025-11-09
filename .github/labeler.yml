@@ -1,0 +1,96 @@
+# Labeler configuration for automatic PR labeling based on changed files
+# Labels will be automatically applied when PRs are opened or updated
+
+# API-related changes
+api:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/api/**'
+      - any-glob-to-any-file: 'apps/api/**/*'
+
+# Web/frontend-related changes
+web:
+  - changed-files:
+      - any-glob-to-any-file: 'apps/web/**'
+      - any-glob-to-any-file: 'apps/web/**/*'
+
+# UI component library changes
+ui:
+  - changed-files:
+      - any-glob-to-any-file: 'packages/ui/**'
+      - any-glob-to-any-file: 'packages/ui/**/*'
+
+# Shared configuration changes
+config:
+  - changed-files:
+      - any-glob-to-any-file: 'packages/eslint-config/**'
+      - any-glob-to-any-file: 'packages/typescript-config/**'
+      - any-glob-to-any-file: 'tsconfig.json'
+      - any-glob-to-any-file: '*.config.js'
+      - any-glob-to-any-file: '*.config.mjs'
+      - any-glob-to-any-file: 'eslint.config.*'
+      - any-glob-to-any-file: 'prettier.config.*'
+      - any-glob-to-any-file: 'commitlint.config.*'
+
+# CI/CD and GitHub workflows
+ci:
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+      - any-glob-to-any-file: 'Dockerfile*'
+      - any-glob-to-any-file: 'docker-compose.yml'
+
+# Database and Prisma changes
+database:
+  - changed-files:
+      - any-glob-to-any-file: '**/prisma/**'
+      - any-glob-to-any-file: '**/schema.prisma'
+      - any-glob-to-any-file: '**/migrations/**'
+
+# Documentation changes
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: '*.md'
+      - any-glob-to-any-file: 'docs/**'
+      - any-glob-to-any-file: 'README.md'
+      - any-glob-to-any-file: 'CHANGELOG.md'
+
+# Dependency and package management
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: 'package.json'
+      - any-glob-to-any-file: 'pnpm-lock.yaml'
+      - any-glob-to-any-file: 'pnpm-workspace.yaml'
+
+# Testing changes
+tests:
+  - changed-files:
+      - any-glob-to-any-file: '**/*.spec.ts'
+      - any-glob-to-any-file: '**/*.test.ts'
+      - any-glob-to-any-file: '**/*.spec.tsx'
+      - any-glob-to-any-file: '**/*.test.tsx'
+      - any-glob-to-any-file: '**/test/**'
+      - any-glob-to-any-file: '**/__tests__/**'
+      - any-glob-to-any-file: 'jest.config.*'
+      - any-glob-to-any-file: 'vitest.config.*'
+
+# Infrastructure and deployment
+infrastructure:
+  - changed-files:
+      - any-glob-to-any-file: 'Dockerfile*'
+      - any-glob-to-any-file: 'docker-compose.yml'
+      - any-glob-to-any-file: '.dockerignore'
+      - any-glob-to-any-file: 'turbo.json'
+
+# Authentication and security
+security:
+  - changed-files:
+      - any-glob-to-any-file: '**/auth/**'
+      - any-glob-to-any-file: '**/guards/**'
+      - any-glob-to-any-file: '**/middleware.ts'
+      - any-glob-to-any-file: '**/rate-limit/**'
+
+# Styling and UI changes
+styling:
+  - changed-files:
+      - any-glob-to-any-file: '**/*.css'
+      - any-glob-to-any-file: '**/tailwind.config.*'
+      - any-glob-to-any-file: '**/postcss.config.*'
