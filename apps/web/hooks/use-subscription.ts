@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api/client'
 import { toast } from 'sonner'
-import { getStripe } from '../lib/stripe'
 
 interface SubscriptionStatus {
   status: string
@@ -62,17 +61,11 @@ export const useCreateCheckoutSession = () => {
       })
       return response.data
     },
-    onSuccess: async (data) => {
-      const stripe = await getStripe()
-      if (stripe && data.sessionId) {
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: data.sessionId,
-        })
-        if (error) {
-          toast.error(error.message)
-        }
-      } else if (data.url) {
+    onSuccess: (data) => {
+      if (data.url) {
         window.location.href = data.url
+      } else {
+        toast.error('Failed to get checkout URL')
       }
       queryClient.invalidateQueries({ queryKey: ['subscription-status'] })
     },
