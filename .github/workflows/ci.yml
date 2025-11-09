@@ -83,7 +83,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
 
@@ -137,7 +137,7 @@ jobs:
           version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
           cache: 'pnpm'
@@ -165,7 +165,7 @@ jobs:
           version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
           cache: 'pnpm'
@@ -202,7 +202,7 @@ jobs:
           version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
           cache: 'pnpm'
@@ -233,7 +233,7 @@ jobs:
           version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
           cache: 'pnpm'
@@ -264,7 +264,7 @@ jobs:
           version: 10.4.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
           cache: 'pnpm'
@@ -311,7 +311,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22.11.0'
 
