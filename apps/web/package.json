@@ -32,7 +32,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "stripe": "^19.3.0",
+    "stripe": "^19.3.1",
     "@eslint/eslintrc": "^3.3.1",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "^24.10.0",
