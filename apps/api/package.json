@@ -64,7 +64,7 @@
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/swagger": "^11.2.1",
-    "@nestjs/testing": "^11.1.8",
+    "@nestjs/testing": "^11.1.9",
     "@nestjs/throttler": "^6.4.0",
     "@react-email/preview-server": "^5.0.1",
     "@scalar/nestjs-api-reference": "^1.0.7",
