@@ -37,7 +37,7 @@
     "@tanstack/react-query-devtools": "^5.90.2",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
+    "@types/react-dom": "^19.2.3",
     "@workspace/eslint-config": "workspace:^",
     "@workspace/typescript-config": "workspace:*",
     "eslint-config-prettier": "^10.1.8",
